@@ -6,7 +6,7 @@ void e_bss();
 void payload_start();
 
 int rvh_csr_restore(void *restore_addr);
-int rvv_restore(void *rvv_csr_addr,void *rvv_reg_addr);
+int rvv_restore(void *rvv_csr_addr, void *rvv_reg_addr);
 
 int restore_csr_vector(void *restore_addr);
 int restore_float_vector(void *restore_addr);

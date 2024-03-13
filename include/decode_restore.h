@@ -97,8 +97,7 @@ __attribute__((unused)) static single_core_rvgc_rvv_rvh_memlayout
 void single_core_rvv_rvh_rvgc_restore(
   single_core_rvgc_rvv_rvh_memlayout *memlayout);
 void multicore_decode_restore(uint64_t cpt_base_address,
-                              uint64_t single_core_size,
-                              int cpu_id,
+                              uint64_t single_core_size, int cpu_id,
                               single_core_rvgc_rvv_rvh_memlayout *memlayout);
 
 #endif
