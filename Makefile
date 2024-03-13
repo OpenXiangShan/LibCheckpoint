@@ -1,0 +1,87 @@
+#***************************************************************************************
+# Copyright (c) 2020-2022 Institute of Computing Technology, Chinese Academy of Sciences
+#
+# NEMU is licensed under Mulan PSL v2.
+# You can use this software according to the terms and conditions of the Mulan PSL v2.
+# You may obtain a copy of Mulan PSL v2 at:
+#          http://license.coscl.org.cn/MulanPSL2
+#
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+# EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+# MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+#
+# See the Mulan PSL v2 for more details.
+#**************************************************************************************/
+
+NAME = gcpt
+
+BUILD_DIR ?= ./build
+
+OBJ_DIR ?= $(BUILD_DIR)/obj
+BINARY ?= $(BUILD_DIR)/$(NAME)
+
+.DEFAULT_GOAL = app
+
+INC_DIR += include resource/nanopb
+
+# Compilation flags
+CROSS_COMPILE = /nfs/home/jiaxiaoyu/tools/riscv-toolchain-gcc12.2.0/bin/riscv64-unknown-elf-
+CC = $(CROSS_COMPILE)gcc
+LD = $(CROSS_COMPILE)ld
+OBJDUMP = $(CROSS_COMPILE)objdump
+OBJCOPY = $(CROSS_COMPILE)objcopy
+INCLUDES  = $(addprefix -I, $(INC_DIR))
+CFLAGS += -fno-PIE -mcmodel=medany -O2 -MMD -Wall -Werror $(INCLUDES)
+CFLAGS += -march=rv64gcv -nostdlib -fno-common -ffreestanding
+
+ifdef GCPT_PAYLOAD_PATH
+CFLAGS += -DGCPT_PAYLOAD_PATH=\"$(GCPT_PAYLOAD_PATH)\"
+else
+GCPT_PAYLOAD_PATH =
+endif
+
+ifdef DISPLAY_CPU_N
+CFLAGS += -DDISPLAY=\"$(DISPLAY_CPU_N)\"
+endif
+
+ifdef ENCODE_DECODE_CHECK
+CFLAGS += -DENCODE_DECODE_CHECK
+endif
+
+# Files to be compiled
+SRCS = $(shell find src/ -name "*.[cS]")
+SRCS += resource/nanopb/pb_common.c
+SRCS += resource/nanopb/pb_decode.c
+SRCS += resource/nanopb/pb_encode.c
+SRCS += $(patsubst %.proto,%.pb.c,$(shell find src/ -name "*.proto"))
+OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(basename $(SRCS))))
+
+# Protobuf
+%.pb.c: %.proto
+	@python resource/nanopb/generator/nanopb_generator.py --strip-path $<
+	@mv $(basename $<).pb.h include/
+
+# Compilation patterns
+$(OBJ_DIR)/%.o: %.c
+	@mkdir -p $(dir $@) && echo + CC $<
+	@$(CC) $(CFLAGS) -c -o $@ $<
+
+$(OBJ_DIR)/%.o: %.S
+	@mkdir -p $(dir $@) && echo + AS $<
+	@$(CC) $(CFLAGS) -c -o $@ $<
+
+# Dependencies
+#-include $(OBJS:.o=.d)
+
+$(BINARY): $(OBJS) $(GCPT_PAYLOAD_PATH)
+	@echo + LD $@
+	@$(LD) -O0 -nostdlib -T restore.lds -o $@ $^
+	@$(OBJDUMP) -S $@ > $@.txt
+	@$(OBJCOPY) -S --set-section-flags .bss=alloc,contents -O binary $@ $@.bin
+
+app: $(BINARY)
+
+clean:
+	@echo + RM ./build ./src/checkpoint.pb.c ./include/checkpoint.pb.h
+	@-rm -rf $(shell find src/ -name "*.pb.[ch]")
+	@-rm -rf $(BUILD_DIR)

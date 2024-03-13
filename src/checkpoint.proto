@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+message checkpoint_header{
+  uint64 magic_number                 = 1;
+  uint64 cpt_offset                   = 2;
+  uint64 cpu_num                      = 3;
+  uint64 single_core_size             = 5;
+  uint64 version                      = 6;
+};
+
+message single_core_rvgc_rvv_rvh_memlayout{
+  uint64 pc_cpt_addr             = 12;
+  uint64 mode_cpt_addr           = 13;
+  uint64 mtime_cpt_addr          = 14;
+  uint64 mtime_cmp_cpt_addr      = 15;
+  uint64 misc_done_cpt_addr      = 16;
+  uint64 misc_reserve            = 17;
+  uint64 int_reg_cpt_addr        = 18;
+  uint64 int_reg_done            = 19;
+  uint64 float_reg_cpt_addr      = 20;
+  uint64 float_reg_done          = 21;
+  uint64 csr_reg_cpt_addr        = 22;
+  uint64 csr_reg_done            = 23;
+  uint64 csr_reserve             = 24;
+  uint64 vector_reg_cpt_addr     = 25;
+  uint64 vector_reg_done         = 26;
+};
