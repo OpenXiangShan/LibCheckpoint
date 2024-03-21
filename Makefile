@@ -25,7 +25,7 @@ BINARY ?= $(BUILD_DIR)/$(NAME)
 INC_DIR += include resource/nanopb
 
 # Compilation flags
-CROSS_COMPILE = /nfs/home/jiaxiaoyu/tools/riscv-toolchain-gcc12.2.0/bin/riscv64-unknown-elf-
+CROSS_COMPILE = 
 CC = $(CROSS_COMPILE)gcc
 LD = $(CROSS_COMPILE)ld
 OBJDUMP = $(CROSS_COMPILE)objdump
@@ -48,9 +48,9 @@ ifdef ENCODE_DECODE_CHECK
 CFLAGS += -DENCODE_DECODE_CHECK
 endif
 
-CSANITIZE := undefined
-
-CFLAGS += $(addprefix -fsanitize=, $(CSANITIZE))
+#CSANITIZE := undefined
+#
+#CFLAGS += $(addprefix -fsanitize=, $(CSANITIZE))
 
 # Files to be compiled
 SRCS = $(shell find src/ -name "*.[cS]")
