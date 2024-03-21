@@ -39,10 +39,10 @@ void (*_start_payload)();
     bool status =                                                        \
       pb_decode_ex(stream, FIELDS, memlayout, PB_ENCODE_NULLTERMINATED); \
     if (!status) {                                                       \
-      printf(#FIELD_NAME, " decode filed: %s\n", stream->errmsg);        \
+      printf("%s decode filed: %s\n", #FIELD_NAME, stream->errmsg);      \
       return false;                                                      \
     }                                                                    \
-    printf(#FIELD_NAME, " decode success\n");                            \
+    printf("%s decode success\n", #FIELD_NAME);                          \
     return true;                                                         \
   }
 
