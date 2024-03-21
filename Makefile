@@ -48,6 +48,10 @@ ifdef ENCODE_DECODE_CHECK
 CFLAGS += -DENCODE_DECODE_CHECK
 endif
 
+CSANITIZE := undefined
+
+CFLAGS += $(addprefix -fsanitize=, $(CSANITIZE))
+
 # Files to be compiled
 SRCS = $(shell find src/ -name "*.[cS]")
 SRCS += resource/nanopb/pb_common.c
@@ -69,9 +73,6 @@ $(OBJ_DIR)/%.o: %.c
 $(OBJ_DIR)/%.o: %.S
 	@mkdir -p $(dir $@) && echo + AS $<
 	@$(CC) $(CFLAGS) -c -o $@ $<
-
-# Dependencies
-#-include $(OBJS:.o=.d)
 
 $(BINARY): $(OBJS) $(GCPT_PAYLOAD_PATH)
 	@echo + LD $@
