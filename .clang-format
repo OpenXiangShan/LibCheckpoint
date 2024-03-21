@@ -74,3 +74,4 @@ IndentPPDirectives: BeforeHash
 IndentWidth: 2
 IndentWrappedFunctionNames: true
 InsertBraces: true
+ColumnLimit: 120
