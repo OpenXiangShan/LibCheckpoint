@@ -4,3 +4,6 @@ GTAGS
 .cache/*
 build/*
 compile_commands.json
+src/checkpoint.pb.c
+include/checkpoint.pb.h
+**/meson.build
