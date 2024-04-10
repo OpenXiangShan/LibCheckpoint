@@ -19,3 +19,14 @@ gcpt_stack:
   .space 4096 * 128
   .global gcpt_stack_top
 gcpt_stack_top:
+
+  .section ".payload", "ax", %progbits
+  .align 4
+  .global payload_bin
+payload_bin:
+#ifndef GCPT_PAYLOAD_PATH
+  wfi
+  j payload_bin
+#else
+  .incbin GCPT_PAYLOAD_PATH
+#endif
