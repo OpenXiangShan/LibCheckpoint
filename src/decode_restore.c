@@ -18,6 +18,7 @@
 bool checkpoint_possibility_restore_check(uint64_t *csr_address,
                                           int *rvv_could_restore,
                                           int *rvh_could_restore,
+                                          int *rvf_could_restore,
                                           uint64_t *mode_address) {
   uint64_t host_mstatus = read_csr(mstatus);
   uint64_t host_misa    = read_csr(misa);
@@ -34,9 +35,11 @@ bool checkpoint_possibility_restore_check(uint64_t *csr_address,
     return false;
   }
 
-  if ((checkpoint_misa & MISA_H) && (host_misa & MISA_H)) {
-    *rvh_could_restore = 1;
+  if ((checkpoint_misa & MISA_H) && (host_misa & MISA_H) && (checkpoint_mstatus & MSTATUS_MPV)) {
     // can restore H ext
+    *rvh_could_restore = 1;
+  }else {
+    *rvh_could_restore = 0;
   }
 
   if ((checkpoint_misa & MISA_V) && (host_misa & MISA_V)) {
@@ -45,17 +48,31 @@ bool checkpoint_possibility_restore_check(uint64_t *csr_address,
         ((checkpoint_mstatus & MSTATUS_VS_DIRTY) == MSTATUS_VS_DIRTY)) {
       // prepare mstatus
       write_csr(mstatus, host_mstatus | MSTATUS_VS_INITIAL);
+      // can restore V ext
       *rvv_could_restore = 1;
     } else {
       *rvv_could_restore = 0;
     }
-    // can restore V ext
+  }
+
+  if ((checkpoint_misa & MISA_DF) && (host_misa & MISA_DF)) {
+    if (((checkpoint_mstatus & MSTATUS_FS_INITIAL) == MSTATUS_FS_INITIAL) ||
+        ((checkpoint_mstatus & MSTATUS_FS_CLEAN) == MSTATUS_FS_CLEAN) ||
+        ((checkpoint_mstatus & MSTATUS_FS_DIRTY) == MSTATUS_FS_DIRTY)) {
+      // prepare mstatus
+      write_csr(mstatus, host_mstatus | MSTATUS_FS_INITIAL);
+      // can restore F ext
+      *rvf_could_restore = 1;
+    } else {
+      *rvf_could_restore = 0;
+    }
   }
 
   return true;
 }
 
-single_core_rvgc_rvv_rvh_memlayout get_core_memlayout(uint64_t base_addr, uint64_t single_core_size, int cpu_id,
+single_core_rvgc_rvv_rvh_memlayout
+  get_core_memlayout(uint64_t base_addr, uint64_t single_core_size, int cpu_id,
                      single_core_rvgc_rvv_rvh_memlayout *memlayout) {
 
   // percpu hardware status offset
@@ -156,7 +173,7 @@ void multicore_decode_restore(uint64_t cpt_base_address,
   if (cpu_id == STOP_CPU) {
     while (1) {}
   }
-#endif /* ifdef STOP_CPU0 */
+#endif /* ifdef STOP_CPU */
 
 #ifdef DISPLAY
   if (DISPLAY == cpu_id) {
@@ -174,10 +191,12 @@ void single_core_rvv_rvh_rvgc_restore(
   }
   int rvv_could_restore = 0;
   int rvh_could_restore = 0;
+  int rvf_could_restore = 0;
 
   if (!checkpoint_possibility_restore_check(
         (void *)memlayout->csr_reg_cpt_addr, &rvv_could_restore,
-        &rvh_could_restore, (void *)memlayout->mode_cpt_addr)) {
+        &rvh_could_restore, &rvf_could_restore,
+        (void *)memlayout->mode_cpt_addr)) {
     nemu_signal(GOOD_TRAP);
   }
 
@@ -190,11 +209,14 @@ void single_core_rvv_rvh_rvgc_restore(
                   (void *)memlayout->vector_reg_cpt_addr);
   }
 
+  if (rvf_could_restore) {
+    RESTORE_CHECK(restore_float_vector, Float, 1,
+                  (void *)memlayout->float_reg_cpt_addr);
+  }
+
   RESTORE_CHECK(restore_other_csr, Other, 1,
                 (void *)memlayout->mtime_cmp_cpt_addr,
                 (void *)memlayout->mtime_cpt_addr);
-  RESTORE_CHECK(restore_float_vector, Float, 1,
-                (void *)memlayout->float_reg_cpt_addr);
   RESTORE_CHECK(restore_csr_vector, CSR, 1,
                 (void *)memlayout->csr_reg_cpt_addr);
 

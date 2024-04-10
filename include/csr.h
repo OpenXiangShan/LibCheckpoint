@@ -73,8 +73,13 @@ f(vstart, 0x008)
 #define MSTATUS_VS_CLEAN   2<<9
 #define MSTATUS_VS_DIRTY   3<<9
 
-#define MISA_V 0x200000
-#define MISA_H 0x80
+#define MSTATUS_FS_OFF     0<<13
+#define MSTATUS_FS_INITIAL 1<<13
+#define MSTATUS_FS_CLEAN   2<<13
+#define MSTATUS_FS_DIRTY   3<<13
 
+#define MISA_V  0x200000
+#define MISA_H  0x80
+#define MISA_DF 0x28
 
 #endif
