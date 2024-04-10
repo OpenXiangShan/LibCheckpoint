@@ -81,7 +81,11 @@ single_core_rvgc_rvv_rvh_memlayout
 
   single_core_rvgc_rvv_rvh_memlayout *single_core_memlayout;
   if (memlayout == NULL) {
-    single_core_memlayout = &multicore_default_layout;
+#ifdef USING_QEMU_DUAL_CORE_SYSTEM
+    single_core_memlayout = &default_qemu_memlayout;
+#else
+    single_core_memlayout = &default_multicore_layout;
+#endif
   } else {
     single_core_memlayout = memlayout;
   }
