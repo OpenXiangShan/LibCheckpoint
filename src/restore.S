@@ -48,81 +48,82 @@ rvh_csr_restore:
 
   .global rvv_restore
 rvv_restore:
+  # prepare v csrs, might not be necessary
   mv t0, a0
-  li t2,VTYPE_ID
-  slli t2,t2,3
-  add t2,t0,t2
-  ld t1,(t2)
-  li t2,VL_ID
-  slli t2,t2,3
-  add t2,t0,t2
-  ld t2,(t2)
+  li t2, VTYPE_ID
+  slli t2, t2, 3
+  add t2, t0, t2
+  ld t1, (t2)
+  li t2, VL_ID
+  slli t2, t2, 3
+  add t2, t0, t2
+  ld t2, (t2)
   vsetvl t2, t2, t1
   VCSRS(CSRS_RESTORE)
 
-  addi a1,a1,0
+  addi a1, a1, 0
   vl1re64.v v0, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v1, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v2, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v3, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v4, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v5, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v6, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v7, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v8, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v9, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v10, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v11, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v12, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v13, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v14, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v15, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v16, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v17, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v18, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v19, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v20, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v21, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v22, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v23, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v24, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v25, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v26, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v27, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v28, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v29, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v30, (a1)
-  addi a1,a1,16
+  addi a1, a1, 16
   vl1re64.v v31, (a1)
   li a0, 1
   ret

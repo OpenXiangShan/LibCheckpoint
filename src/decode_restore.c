@@ -35,10 +35,11 @@ bool checkpoint_possibility_restore_check(uint64_t *csr_address,
     return false;
   }
 
-  if ((checkpoint_misa & MISA_H) && (host_misa & MISA_H) && (checkpoint_mstatus & MSTATUS_MPV)) {
+  if ((checkpoint_misa & MISA_H) && (host_misa & MISA_H) &&
+      (checkpoint_mstatus & MSTATUS_MPV)) {
     // can restore H ext
     *rvh_could_restore = 1;
-  }else {
+  } else {
     *rvh_could_restore = 0;
   }
 
