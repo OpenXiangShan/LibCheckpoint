@@ -24,8 +24,6 @@ SECTIONS
     *(.text.gcpt_trap_handler)
     *(.text.gcpt_trap_entry)
 
-    *(.original.*)
-
     *(.text .text.*)
 
   }
@@ -74,11 +72,6 @@ SECTIONS
 
       *(.restore.text)
 
-      *(.restore.size)
-
-      *(.restore.code)
-
-      *(.restore.flag)
   }
 
   gcpt_end = .;

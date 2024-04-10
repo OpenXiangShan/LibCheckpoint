@@ -141,24 +141,12 @@ restore_other_csr:
   ld t1, (t1)
   sd t1, (t0)
 
-  # li t0, MIE_MTIE
-  # csrs CSR_MIE, t0
-
-  # csrr t1, CSR_MSTATUS
-  # srli t0, t1, 63
-  # beqz t0, restore_pc_vector
-
   li a0, 1
   ret
 
   .global restore_float_vector
 restore_float_vector:
-  # set fs
-  li t0, MSTATUS_FS
-  csrs  CSR_MSTATUS, t0
-
-  mv t0,a0
-
+  mv t0, a0
   fld f0, (0*8)(t0)
   fld f1, (1*8)(t0)
   fld f2, (2*8)(t0)

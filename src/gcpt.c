@@ -9,10 +9,6 @@
 #include <pb_encode.h>
 #include <string.h>
 
-void restore_version_oldest() {}
-void restore_version_with_rvv_and_new_layout() {}
-void restore_memlayout_detected_with_checkpoint() {}
-
 #define MAGIC_NUMBER         0xdeadbeef
 #define RESET_VECTOR         0x80000000
 #define GCPT_DEVICE_ADDR     0x60000000
