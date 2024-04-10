@@ -32,7 +32,7 @@ OBJDUMP = $(CROSS_COMPILE)objdump
 OBJCOPY = $(CROSS_COMPILE)objcopy
 INCLUDES  = $(addprefix -I, $(INC_DIR))
 CFLAGS += -fno-PIE -mcmodel=medany -O2 -MMD -Wall -Werror $(INCLUDES)
-CFLAGS += -march=rv64gcv -nostdlib -fno-common -ffreestanding
+CFLAGS += -nostdlib -fno-common -ffreestanding
 
 ifdef GCPT_PAYLOAD_PATH
 CFLAGS += -DGCPT_PAYLOAD_PATH=\"$(GCPT_PAYLOAD_PATH)\"
@@ -68,11 +68,11 @@ OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(basename $(SRCS))))
 # Compilation patterns
 $(OBJ_DIR)/%.o: %.c
 	@mkdir -p $(dir $@) && echo + CC $<
-	@$(CC) $(CFLAGS) -c -o $@ $<
+	@$(CC) $(CFLAGS) -march=rv64gc -c -o $@ $<
 
 $(OBJ_DIR)/%.o: %.S
 	@mkdir -p $(dir $@) && echo + AS $<
-	@$(CC) $(CFLAGS) -c -o $@ $<
+	@$(CC) $(CFLAGS) -march=rv64gcv -c -o $@ $<
 
 $(BINARY): $(OBJS) $(GCPT_PAYLOAD_PATH)
 	@echo + LD $@
