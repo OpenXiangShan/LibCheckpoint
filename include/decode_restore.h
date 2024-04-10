@@ -66,6 +66,25 @@ __attribute__((unused)) static single_core_rvgc_rvv_rvh_memlayout
     .vector_reg_done     = 0x800FFFF8,
 };
 
+__attribute__((unused)) static single_core_rvgc_rvv_rvh_memlayout
+  default_qemu_memlayout = {
+    .pc_cpt_addr         = 0xECDB8,
+    .mode_cpt_addr       = 0xECDC0,
+    .mtime_cpt_addr      = 0xECDC8,
+    .mtime_cmp_cpt_addr  = 0xECDD0,
+    .misc_done_cpt_addr  = 0xECDD8,
+    .misc_reserve        = 0xECDE0,
+    .int_reg_cpt_addr    = 0xEDDE0,
+    .int_reg_done        = 0xEDEE0,
+    .float_reg_cpt_addr  = 0xEDEE8,
+    .float_reg_done      = 0xEDFE8,
+    .csr_reg_cpt_addr    = 0xEDFF0,
+    .csr_reg_done        = 0xF5FF0,
+    .csr_reserve         = 0xF5FF8,
+    .vector_reg_cpt_addr = 0xFDFF8,
+    .vector_reg_done     = 0xFFFF8,
+};
+
 __attribute__((unused)) static checkpoint_header multicore_default_header = {
   .magic_number = 0xdeadbeef,
   .version      = 0x20240205,
@@ -76,7 +95,7 @@ __attribute__((unused)) static checkpoint_header multicore_default_header = {
 };
 
 __attribute__((unused)) static single_core_rvgc_rvv_rvh_memlayout
-  multicore_default_layout = {
+  default_multicore_layout = {
     .pc_cpt_addr         = 0x0,
     .mode_cpt_addr       = 0x8,
     .mtime_cpt_addr      = 0x10,
@@ -96,6 +115,7 @@ __attribute__((unused)) static single_core_rvgc_rvv_rvh_memlayout
 
 void single_core_rvv_rvh_rvgc_restore(
   single_core_rvgc_rvv_rvh_memlayout *memlayout);
+
 void multicore_decode_restore(uint64_t cpt_base_address,
                               uint64_t single_core_size, int cpu_id,
                               single_core_rvgc_rvv_rvh_memlayout *memlayout);
