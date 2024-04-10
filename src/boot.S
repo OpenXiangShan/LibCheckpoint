@@ -3,6 +3,7 @@
   .section ".text.entry", "ax", @progbits
   .global _entry
 _entry:
+  csrr a0, mhartid
   mv t0, a0
   slli t0, t0, 12
   li t1, 4096
