@@ -17,5 +17,7 @@ int rvh_support_check();
 int rvv_support_check();
 
 void gcpt_trap();
+void gcpt_start();
+void gcpt_end();
 
 #endif
