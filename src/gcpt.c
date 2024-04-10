@@ -1,4 +1,5 @@
 #include "checkpoint.pb.h"
+#include "csr.h"
 #include "decode_restore.h"
 #include "gcpt_asm.h"
 #include "gcpt_trap.h"
@@ -11,8 +12,12 @@
 
 #define MAGIC_NUMBER         0xdeadbeef
 #define RESET_VECTOR         0x80000000
+#define BOOT_LOADER          0x80100000
 #define GCPT_DEVICE_ADDR     0x60000000
-#define PROTOBUF_BUFFER_SIZE 8192
+#define PROTOBUF_BUFFER_SIZE 4096
+
+// #define USING_QEMU_DUAL_CORE_SYSTEM
+// #define ENCODE_DECODE_CHECK
 
 #ifdef ENCODE_DECODE_CHECK
 static char memory_buffer[0x1000];
@@ -69,7 +74,7 @@ failed:
 
 #define GLUE(a, b) a##b
 #define PROTOBUF_DECODE(FIELDS, FIELD_NAME)                              \
-  static bool glue(FIELD_NAME, _decode)(pb_istream_t * stream,           \
+  static bool GLUE(FIELD_NAME, _decode)(pb_istream_t * stream,           \
                                         void *memlayout) {               \
     bool status =                                                        \
       pb_decode_ex(stream, FIELDS, memlayout, PB_ENCODE_NULLTERMINATED); \
@@ -81,7 +86,10 @@ failed:
     return true;                                                         \
   }
 
+__attribute__((unused))
 PROTOBUF_DECODE(checkpoint_header_fields, header)
+
+__attribute__((unused))
 PROTOBUF_DECODE(single_core_rvgc_rvv_rvh_memlayout_fields, memlayout)
 
 // Depending on the link script, the hardware state may be overwritten and
@@ -128,9 +136,10 @@ int try_restore_from_rvgc_original_single_core_memlayout() {
 
 void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
   __attribute__((unused)) int signal = GOOD_TRAP;
+  printf("Hello, gcpt at cpu %d\n", cpu_id);
   // must clear bss
   clear_bss();
-  // will be replaced when csr restore
+
   enable_gcpt_trap();
 
 #ifdef USING_QEMU_DUAL_CORE_SYSTEM
