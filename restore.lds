@@ -76,7 +76,7 @@ SECTIONS
 
   gcpt_end = .;
 
-  . = 0x80100000;
+  . = DEFINED(GCPT_PAYLOAD) ? 0x80100000 : .;
   payload_start = .;
   .payload :
   {

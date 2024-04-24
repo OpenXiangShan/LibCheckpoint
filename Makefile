@@ -34,7 +34,10 @@ INCLUDES  = $(addprefix -I, $(INC_DIR))
 CFLAGS += -fno-PIE -mcmodel=medany -O2 -MMD -Wall -Werror $(INCLUDES)
 CFLAGS += -nostdlib -fno-common -ffreestanding
 
+LDFLAGS =
+
 ifdef GCPT_PAYLOAD_PATH
+LDFLAGS += --defsym=GCPT_PAYLOAD=1
 CFLAGS += -DGCPT_PAYLOAD_PATH=\"$(GCPT_PAYLOAD_PATH)\"
 else
 GCPT_PAYLOAD_PATH =
@@ -74,9 +77,9 @@ $(OBJ_DIR)/%.o: %.S
 	@mkdir -p $(dir $@) && echo + AS $<
 	@$(CC) $(CFLAGS) -march=rv64gcv -c -o $@ $<
 
-$(BINARY): $(OBJS) $(GCPT_PAYLOAD_PATH)
+$(BINARY): $(OBJS)
 	@echo + LD $@
-	@$(LD) -O0 -nostdlib -T restore.lds -o $@ $^
+	@$(LD) -O0 -nostdlib -T restore.lds $(LDFLAGS) -o $@ $^
 	@$(OBJDUMP) -S $@ > $@.txt
 	@$(OBJCOPY) -S --set-section-flags .bss=alloc,contents -O binary $@ $@.bin
 

@@ -25,8 +25,6 @@ gcpt_stack_top:
   .global payload_bin
 payload_bin:
 #ifndef GCPT_PAYLOAD_PATH
-  wfi
-  j payload_bin
 #else
   .incbin GCPT_PAYLOAD_PATH
 #endif
