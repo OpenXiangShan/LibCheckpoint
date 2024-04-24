@@ -15,5 +15,7 @@ void __attribute__((section(".text.gcpt_trap_handler"))) gcpt_trap_handler() {
 
 void __attribute__((section(".text.enable_gcpt_trap"))) enable_gcpt_trap() {
   uint64_t mtvec = (uint64_t)gcpt_trap & 0xFFFFFFFFFFFFFFFC;
+  uint64_t mstatus = read_csr(mstatus) | MSTATUS_MIE;
+  write_csr(mstatus, mstatus);
   write_csr(mtvec, mtvec);
 }
