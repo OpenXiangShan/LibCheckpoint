@@ -148,9 +148,9 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
 #else
 
 
-  #ifdef ENCODE_DECODE_CHECK
+#ifdef ENCODE_DECODE_CHECK
   try_encode();
-  #endif /* ifdef ENCODE_DECODE_CHECK */
+#endif /* ifdef ENCODE_DECODE_CHECK */
 
   checkpoint_header header;
   single_core_rvgc_rvv_rvh_memlayout memlayout;
