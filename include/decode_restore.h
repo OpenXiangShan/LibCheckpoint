@@ -114,7 +114,7 @@ __attribute__((unused)) static single_core_rvgc_rvv_rvh_memlayout
 };
 
 void single_core_rvv_rvh_rvgc_restore(
-  single_core_rvgc_rvv_rvh_memlayout *memlayout);
+  single_core_rvgc_rvv_rvh_memlayout *memlayout, int cpu_id);
 
 void multicore_decode_restore(uint64_t cpt_base_address,
                               uint64_t single_core_size, int cpu_id,

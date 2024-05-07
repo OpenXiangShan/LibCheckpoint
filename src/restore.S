@@ -129,16 +129,21 @@ rvv_restore:
   ret
 
 
-  .global restore_other_csr
-restore_other_csr:
-  # set mtime (inaccurate) and mtimecmp
-  li t0, CLINT_MMIO+CLINT_MTIMECMP
-  mv t1, a0
-  ld t1, (t1)
-  sd t1, (t0)
+  .global restore_mtime
+restore_mtime:
+  li t0, CLINT_MMIO + CLINT_MTIME
+  mv t1, a0 # source addr
+  ld t1, (t1) # load mtime value from checkpoint
+  sd t1, (t0) # store in device
 
-  li t0, CLINT_MMIO+CLINT_MTIME
-  mv t1, a1
+  li a0, 1
+  ret
+
+  .global restore_mtime_cmp
+restore_mtime_cmp:
+  # set mtime (inaccurate) and mtimecmp
+  mv t0, a0 # dst addr
+  mv t1, a1 # source addr
   ld t1, (t1)
   sd t1, (t0)
 

@@ -3,8 +3,13 @@
 #include "csr.h"
 #include "encoding.h"
 #include "gcpt_asm.h"
+#include "spinlock.h"
 #include "gcpt_trap.h"
 #include "printf.h"
+
+spinlock_t globash_restore_lock;
+static uint64_t release_restore = 0;
+static uint64_t global_atomic_restore_counter = 0;
 
 #define RESTORE_CHECK(func, name, success_status, ...) \
   {                                                    \
@@ -186,17 +191,18 @@ void multicore_decode_restore(uint64_t cpt_base_address,
   }
 #endif /* ifdef DISPLAY */
 
-  single_core_rvv_rvh_rvgc_restore(&multi_core_mem_layout);
+  single_core_rvv_rvh_rvgc_restore(&multi_core_mem_layout, cpu_id);
 };
 
 void single_core_rvv_rvh_rvgc_restore(
-  single_core_rvgc_rvv_rvh_memlayout *memlayout) {
+  single_core_rvgc_rvv_rvh_memlayout *memlayout, int cpu_id) {
   if (memlayout == NULL) {
     memlayout = &default_rvgc_v_h_memlayout;
   }
   int rvv_could_restore = 0;
   int rvh_could_restore = 0;
   int rvf_could_restore = 0;
+  int all_cpu_num = *((uint64_t*)memlayout->csr_reserve);
 
   if (!checkpoint_possibility_restore_check(
         (void *)memlayout->csr_reg_cpt_addr, &rvv_could_restore,
@@ -219,11 +225,25 @@ void single_core_rvv_rvh_rvgc_restore(
                   (void *)memlayout->float_reg_cpt_addr);
   }
 
-  RESTORE_CHECK(restore_other_csr, Other, 1,
-                (void *)memlayout->mtime_cmp_cpt_addr,
-                (void *)memlayout->mtime_cpt_addr);
   RESTORE_CHECK(restore_csr_vector, CSR, 1,
                 (void *)memlayout->csr_reg_cpt_addr);
+
+  RESTORE_CHECK(restore_mtime_cmp, MTIME_CMP, 1,
+                (void *)(uint64_t)(CLINT_MMIO + CLINT_MTIMECMP + (cpu_id * 8)),
+                (void *)(memlayout->mtime_cmp_cpt_addr + (cpu_id * 8)));
+
+  spinlock_lock(&globash_restore_lock);
+  atomic_add(&global_atomic_restore_counter, 1);
+  printf("all cpu num %d atomic flag %d\n", all_cpu_num, atomic_read(&global_atomic_restore_counter));
+  if (atomic_read(&global_atomic_restore_counter) != all_cpu_num && all_cpu_num != 0) {
+    spinlock_unlock(&globash_restore_lock);
+    while (atomic_read(&release_restore) != 1) {}
+  }else{
+    spinlock_unlock(&globash_restore_lock);
+    atomic_set(&release_restore, 1);
+    RESTORE_CHECK(restore_mtime, MTIME, 1,
+                (void *)memlayout->mtime_cpt_addr);
+  }
 
   restore_int_vector((void *)memlayout->int_reg_cpt_addr);
 }
