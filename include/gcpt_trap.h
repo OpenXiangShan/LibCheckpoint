@@ -12,6 +12,7 @@
 #define GCPT_GET_TRAP             0x4
 #define ENCODE_DECODE_CHECK_ERROR 0x5
 #define SHOULD_NOT_BE_HERE        0x6
+#define GCPT_GET_BAD_IMM          0x7
 
 static inline void nemu_signal(int sig) {
   asm volatile("mv a0, %0\n\t"

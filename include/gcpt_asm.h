@@ -13,7 +13,8 @@ int restore_float_vector(void *restore_addr);
 int restore_other_csr(void *mtime_cmp_cpt_addr, void *mtime_cpt_addr);
 int restore_mtime(void *mtime_cpt_addr);
 int restore_mtime_cmp(void *hart_mtime_cmp_addr, void *mtime_cmp_cpt_addr);
-int restore_int_vector(void *restore_addr);
+int restore_int_vector_jump(void *restore_addr);
+int restore_int_vector_mret(void *restore_addr);
 
 int rvh_support_check();
 int rvv_support_check();

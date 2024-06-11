@@ -28,6 +28,7 @@ SECTIONS
 
   }
 
+
   . = ALIGN(4K);
   e_text = .;
 
@@ -68,11 +69,14 @@ SECTIONS
   . = ALIGN(4K);
   e_bss = .;
 
+  s_restore = .;
   .restore : {
 
       *(.restore.text)
+      *(.restore.coreN_text)
 
   }
+  e_restore = .;
 
   gcpt_end = .;
 

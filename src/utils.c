@@ -22,3 +22,9 @@ void *memset(void *dst, int value, unsigned long size) {
   }
   return dst;
 }
+
+#include <stddef.h>
+
+void __riscv_flush_icache(void* addr, size_t len) {
+    asm volatile ("fence.i" ::: "memory");
+}

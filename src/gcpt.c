@@ -8,6 +8,7 @@
 #include "utils.h"
 #include <pb_decode.h>
 #include <pb_encode.h>
+#include <stdint.h>
 #include <string.h>
 
 #define MAGIC_NUMBER         0xdeadbeef
@@ -142,11 +143,15 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
 
   enable_gcpt_trap();
 
+#ifdef TEST_JUMP
+  extern void test_jump(int cpu_id);
+  test_jump(cpu_id);
+#endif
+
 #ifdef USING_QEMU_DUAL_CORE_SYSTEM
   multicore_decode_restore((uint64_t)get_memory_buffer() + 0x300000,
                            1024 * 1024, cpu_id, NULL);
 #else
-
 
 #ifdef ENCODE_DECODE_CHECK
   try_encode();
