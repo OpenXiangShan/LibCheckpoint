@@ -5,6 +5,7 @@
 #include "gcpt_trap.h"
 #include "pb.h"
 #include "printf.h"
+#include "spinlock.h"
 #include "utils.h"
 #include <pb_decode.h>
 #include <pb_encode.h>
@@ -149,6 +150,11 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
 #endif
 
 #ifdef USING_QEMU_DUAL_CORE_SYSTEM
+  #define CPT_MAGIC_BUMBER 0xbeef
+  uint64_t *cpt_magic_number_addr = (void*)((uint64_t)0x80000000 + (uint64_t)0x300000 + (uint64_t)0xECDB0);
+  if (*cpt_magic_number_addr != CPT_MAGIC_BUMBER) {
+    goto boot_payload;
+  }
   multicore_decode_restore((uint64_t)get_memory_buffer() + 0x300000,
                            1024 * 1024, cpu_id, NULL);
 #else
@@ -187,11 +193,11 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
   // should not be here
   nemu_signal(SHOULD_NOT_BE_HERE);
 
-#ifndef USING_QEMU_DUAL_CORE_SYSTEM
-boot_payload :
+boot_payload:
   printf("Will boot payload from %p\n", payload_start);
-  payload_start();
-#endif
+  disable_gcpt_trap();
+  uint32_t ret = payload_start();
+  if (ret) {
+    printf("Not found payload!\n");
+  }
 }
-
-

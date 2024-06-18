@@ -23,4 +23,5 @@ static inline void nemu_signal(int sig) {
 }
 
 void enable_gcpt_trap();
+void disable_gcpt_trap();
 #endif
