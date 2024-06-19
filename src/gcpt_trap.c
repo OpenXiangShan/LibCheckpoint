@@ -19,3 +19,12 @@ void __attribute__((section(".text.enable_gcpt_trap"))) enable_gcpt_trap() {
   write_csr(mstatus, mstatus);
   write_csr(mtvec, mtvec);
 }
+
+
+void __attribute__((section(".text.disable_gcpt_trap"))) disable_gcpt_trap() {
+  uint64_t mtvec = (uint64_t)0;
+  // enable mie will cause secondary hart boot failed
+  uint64_t mstatus = read_csr(mstatus) & ~MSTATUS_MIE;
+  write_csr(mstatus, mstatus);
+  write_csr(mtvec, mtvec);
+}

@@ -21,12 +21,14 @@ SECTIONS
     *(.text.entry)
     *(.text.c_start)
     *(.text.enable_gcpt_trap)
+    *(.text.disable_gcpt_trap)
     *(.text.gcpt_trap_handler)
     *(.text.gcpt_trap_entry)
 
     *(.text .text.*)
 
   }
+
 
   . = ALIGN(4K);
   e_text = .;
@@ -68,19 +70,23 @@ SECTIONS
   . = ALIGN(4K);
   e_bss = .;
 
+  s_restore = .;
   .restore : {
 
       *(.restore.text)
+      *(.restore.coreN_text)
 
   }
+  e_restore = .;
 
   gcpt_end = .;
-
-  . = DEFINED(GCPT_PAYLOAD) ? 0x80100000 : .;
+  
+  . = DEFINED(GCPT_PAYLOAD_PATH) ? 0x800FFFE0 : .;
   payload_start = .;
   .payload :
   {
     PROVIDE(_payload_start = .);
+    *(.before_payload)
     *(.payload)
     . = ALIGN(8);
     PROVIDE(_payload_end = .);

@@ -33,9 +33,6 @@
   f(stval      , 0x143) \
   f(satp       , 0x180)
 
-#define NOP \
-  addi x0, x0, 0;
-
 #define HCSRS(f) \
   f(hstatus    , 0x600) f(hedeleg    , 0x602) f(hideleg    , 0x603) \
   f(hie        , 0x604) f(hcounteren , 0x606) f(hgeie      , 0x607) \

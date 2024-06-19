@@ -20,11 +20,22 @@ gcpt_stack:
   .global gcpt_stack_top
 gcpt_stack_top:
 
+
+  .section ".before_payload", "ax", %progbits
+  .align 4
+  .global before_boot_payload
+before_boot_payload:
+  li a1, 0
+  csrr a0, mhartid
+  j 0x80100000
+
   .section ".payload", "ax", %progbits
   .align 4
   .global payload_bin
 payload_bin:
 #ifndef GCPT_PAYLOAD_PATH
+  li a0, 1
+  ret
 #else
   .incbin GCPT_PAYLOAD_PATH
 #endif

@@ -25,9 +25,9 @@ BINARY ?= $(BUILD_DIR)/$(NAME)
 INC_DIR += include resource/nanopb
 
 # Compilation flags
-CROSS_COMPILE = 
+CROSS_COMPILE ?= 
 CC = $(CROSS_COMPILE)gcc
-LD = $(CROSS_COMPILE)ld
+LD = $(CROSS_COMPILE)gcc
 OBJDUMP = $(CROSS_COMPILE)objdump
 OBJCOPY = $(CROSS_COMPILE)objcopy
 INCLUDES  = $(addprefix -I, $(INC_DIR))
@@ -37,7 +37,7 @@ CFLAGS += -nostdlib -fno-common -ffreestanding
 LDFLAGS =
 
 ifdef GCPT_PAYLOAD_PATH
-LDFLAGS += --defsym=GCPT_PAYLOAD=1
+LDFLAGS += -Xlinker --defsym GCPT_PAYLOAD_PATH=1
 CFLAGS += -DGCPT_PAYLOAD_PATH=\"$(GCPT_PAYLOAD_PATH)\"
 else
 GCPT_PAYLOAD_PATH =
@@ -92,7 +92,7 @@ $(OBJ_DIR)/%.o: %.S
 $(BINARY): $(OBJS)
 	@echo + LD $@
 	@$(LD) -O0 -nostdlib -T restore.lds $(LDFLAGS) -o $@ $^
-	@$(OBJDUMP) -S $@ > $@.txt
+	@$(OBJDUMP) -S $@ > $@.txt &
 	@$(OBJCOPY) -S --set-section-flags .bss=alloc,contents -O binary $@ $@.bin
 
 app: $(BINARY)

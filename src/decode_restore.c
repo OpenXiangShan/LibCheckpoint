@@ -6,10 +6,25 @@
 #include "spinlock.h"
 #include "gcpt_trap.h"
 #include "printf.h"
+#include <stdint.h>
+
+#define NOP 0x00000013
 
 spinlock_t globash_restore_lock;
 static uint64_t release_restore = 0;
 static uint64_t global_atomic_restore_counter = 0;
+
+typedef union {
+  struct {
+    uint32_t opcode   : 7;
+    uint32_t rd       : 5;
+    uint32_t imm_19_12: 8;
+    uint32_t imm_11   : 1;
+    uint32_t imm_10_1 : 10;
+    uint32_t imm_20   : 1;
+  };
+  uint32_t inst;
+} JalInstr;
 
 #define RESTORE_CHECK(func, name, success_status, ...) \
   {                                                    \
@@ -20,10 +35,28 @@ static uint64_t global_atomic_restore_counter = 0;
     }                                                  \
   }
 
+uint32_t generate_jal(int32_t imm, uint8_t rd) {
+  JalInstr jal  = {0};
+  jal.opcode    = 0b1101111;
+  jal.rd        = rd;
+  jal.imm_20    = (imm >> 19) & 1;
+  jal.imm_19_12 = (imm >> 11) & 0xff;
+  jal.imm_11    = (imm >> 10) & 1;
+  jal.imm_10_1  = (imm >> 0) & 0x3ff;
+
+  uint32_t instr = jal.inst;
+  return instr;
+}
+
+int is_valid_imm(int32_t imm) {
+  return (imm >= -(1 << 20)) && (imm < (1 << 20));
+}
+
 bool checkpoint_possibility_restore_check(uint64_t *csr_address,
                                           int *rvv_could_restore,
                                           int *rvh_could_restore,
                                           int *rvf_could_restore,
+                                          int *should_jump_to_mepc,
                                           uint64_t *mode_address) {
   uint64_t host_mstatus = read_csr(mstatus);
   uint64_t host_misa    = read_csr(misa);
@@ -37,7 +70,7 @@ bool checkpoint_possibility_restore_check(uint64_t *csr_address,
 
   if ((checkpoint_mode << 11) == (uint64_t)MSTATUS_MPP) {
     printf("checkpoint mode is M %lx\n", checkpoint_mode);
-    return false;
+    *should_jump_to_mepc = 1;
   }
 
   if ((checkpoint_misa & MISA_H) && (host_misa & MISA_H) &&
@@ -194,6 +227,50 @@ void multicore_decode_restore(uint64_t cpt_base_address,
   single_core_rvv_rvh_rvgc_restore(&multi_core_mem_layout, cpu_id);
 };
 
+
+void test_jump_target(){
+  printf("hello welcome get jump_inst\n");
+  nemu_signal(GOOD_TRAP);
+}
+
+#ifdef TEST_JUMP
+void test_jump(int cpu_id) {
+  extern void test_jump_target();
+  extern int is_valid_imm(int32_t imm);
+  extern uint32_t generate_jal(int32_t imm, uint8_t rd);
+  extern uint32_t core0;
+
+  uint32_t *pc = &core0;
+  uint32_t offset;
+  uint32_t jal_instr;
+
+  for(int i = 0;i<128;i++){
+    printf("core i %d , nop addr %p core addr %p\n",i, &core0 + 3*(i+1) +i, ((char*)&core0) + (i<<4));
+  }
+  pc    += 3 * (cpu_id + 1) + cpu_id;
+  offset = (uint32_t)((uint64_t)&test_jump_target - (uint64_t)pc);
+
+  if (!is_valid_imm(offset)) {
+    printf("Offset is out of range for JAL instruction pc is %p jump target "
+           "addr is %p\n",
+           pc, &test_jump_target);
+    nemu_signal(GCPT_GET_BAD_IMM);
+  }
+
+  offset    = (offset >> 1) & 0xFFFFF;
+  jal_instr = generate_jal(offset, 0); // x0 is rd
+  *pc       = jal_instr;
+
+  __builtin___clear_cache((char *)pc,
+                          (char *)pc + sizeof(uint32_t));
+
+  extern void jump_to_core();
+//  void (*func_ptr)(void) = (void (*)(void))pc;
+//  func_ptr();
+  jump_to_core();
+}
+#endif
+
 void single_core_rvv_rvh_rvgc_restore(
   single_core_rvgc_rvv_rvh_memlayout *memlayout, int cpu_id) {
   if (memlayout == NULL) {
@@ -202,13 +279,47 @@ void single_core_rvv_rvh_rvgc_restore(
   int rvv_could_restore = 0;
   int rvh_could_restore = 0;
   int rvf_could_restore = 0;
+  int should_jump_to_mepc = 0;
   int all_cpu_num = *((uint64_t*)memlayout->csr_reserve);
 
   if (!checkpoint_possibility_restore_check(
         (void *)memlayout->csr_reg_cpt_addr, &rvv_could_restore,
-        &rvh_could_restore, &rvf_could_restore,
+        &rvh_could_restore, &rvf_could_restore, &should_jump_to_mepc,
         (void *)memlayout->mode_cpt_addr)) {
     nemu_signal(GOOD_TRAP);
+  }
+
+  if (should_jump_to_mepc) {
+    extern void test_jump_target();
+    uint64_t target_pc = *((uint64_t*)memlayout->pc_cpt_addr);
+    extern int is_valid_imm(int32_t imm);
+    extern uint32_t generate_jal(int32_t imm, uint8_t rd);
+    extern uint32_t core0;
+
+    uint32_t *pc = &core0;
+    uint32_t offset;
+    uint32_t jal_instr;
+
+//    for(int i = 0;i<128;i++){
+//      printf("core i %d , nop addr %p\n",i, &core0 + 3*(i+1) +i);
+//    }
+    pc    += 3 * (cpu_id + 1) + cpu_id;
+    offset = (uint32_t)((uint64_t)target_pc - (uint64_t)pc);
+
+    if (!is_valid_imm(offset)) {
+      printf("Offset is out of range for JAL instruction pc is %p jump target "
+             "addr is %p\n",
+             pc, target_pc);
+      nemu_signal(GCPT_GET_BAD_IMM);
+    }
+
+    offset    = (offset >> 1) & 0xFFFFF;
+    jal_instr = generate_jal(offset, 0); // x0 is rd
+    *pc       = jal_instr;
+
+    __builtin___clear_cache((char *)pc,
+                            (char *)pc + sizeof(uint32_t));
+
   }
 
   if (rvh_could_restore) {
@@ -234,16 +345,21 @@ void single_core_rvv_rvh_rvgc_restore(
 
   spinlock_lock(&globash_restore_lock);
   atomic_add(&global_atomic_restore_counter, 1);
-  printf("all cpu num %d atomic flag %d\n", all_cpu_num, atomic_read(&global_atomic_restore_counter));
-  if (atomic_read(&global_atomic_restore_counter) != all_cpu_num && all_cpu_num != 0) {
+  printf("all cpu num %d atomic flag %d\n", all_cpu_num,
+         atomic_read(&global_atomic_restore_counter));
+  if (atomic_read(&global_atomic_restore_counter) != all_cpu_num &&
+      all_cpu_num != 0) {
     spinlock_unlock(&globash_restore_lock);
     while (atomic_read(&release_restore) != 1) {}
-  }else{
+  } else {
     spinlock_unlock(&globash_restore_lock);
     atomic_set(&release_restore, 1);
-    RESTORE_CHECK(restore_mtime, MTIME, 1,
-                (void *)memlayout->mtime_cpt_addr);
+    RESTORE_CHECK(restore_mtime, MTIME, 1, (void *)memlayout->mtime_cpt_addr);
   }
 
-  restore_int_vector((void *)memlayout->int_reg_cpt_addr);
+  if (should_jump_to_mepc) {
+    restore_int_vector_jump((void *)memlayout->int_reg_cpt_addr);
+  } else {
+    restore_int_vector_mret((void *)memlayout->int_reg_cpt_addr);
+  }
 }
