@@ -20,6 +20,13 @@ gcpt_stack:
   .global gcpt_stack_top
 gcpt_stack_top:
 
+  .section ".data"
+target_address:
+#ifndef GCPT_PAYLOAD_POSITION
+  .word 0x80100000
+#else
+  .word GCPT_PAYLOAD_POSITION
+#endif
 
   .section ".before_payload", "ax", %progbits
   .align 4
@@ -27,9 +34,11 @@ gcpt_stack_top:
 before_boot_payload:
   li a1, 0
   csrr a0, mhartid
-  j 0x80100000
+  la t0, target_address
+  ld t0, (t0)
+  jalr zero, 0(t0)
 
-  .section ".payload", "ax", %progbits
+  .section ".payload.bin", "ax", %progbits
   .align 4
   .global payload_bin
 payload_bin:
