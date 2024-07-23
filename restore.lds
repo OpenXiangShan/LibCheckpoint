@@ -80,15 +80,22 @@ SECTIONS
   e_restore = .;
 
   gcpt_end = .;
-  
-  . = DEFINED(GCPT_PAYLOAD_PATH) ? 0x800FFFE0 : .;
+
   payload_start = .;
-  .payload :
+
+  . = DEFINED(GCPT_PAYLOAD_PATH) ? 0x800FFFD0 : .;
+
+  .before_payload :
   {
     PROVIDE(_payload_start = .);
     *(.before_payload)
-    *(.payload)
     . = ALIGN(8);
     PROVIDE(_payload_end = .);
+  }
+
+  . = DEFINED(GCPT_PAYLOAD_POSITION) ? GCPT_PAYLOAD_POSITION : .;
+
+  .payload : {
+    *(.payload.bin)
   }
 }
