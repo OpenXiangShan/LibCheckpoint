@@ -194,7 +194,6 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
   nemu_signal(SHOULD_NOT_BE_HERE);
 
   extern void payload_bin();
-  extern void before_boot_payload();
 
 boot_payload:
   printf("Will boot payload from %p\n", payload_bin);

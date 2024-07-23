@@ -11,8 +11,9 @@ typedef struct { int lock; } spinlock_t;
 #define SPINLOCK_INIT {0}
 
 #define mb() asm volatile ("fence" ::: "memory")
-#define atomic_set(ptr, val) (*(volatile typeof(*(ptr)) *)(ptr) = val)
-#define atomic_read(ptr) (*(volatile typeof(*(ptr)) *)(ptr))
+
+#define atomic_read(ptr) __atomic_load_n(ptr, __ATOMIC_SEQ_CST)
+#define atomic_set(ptr, val) __atomic_store_n(ptr, val, __ATOMIC_SEQ_CST)
 
 #ifdef __riscv_atomic
 # define atomic_add(ptr, inc) __sync_fetch_and_add(ptr, inc)
