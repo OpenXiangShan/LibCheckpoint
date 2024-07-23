@@ -194,11 +194,10 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
   nemu_signal(SHOULD_NOT_BE_HERE);
 
   extern void payload_bin();
+
 boot_payload:
   printf("Will boot payload from %p\n", payload_bin);
   disable_gcpt_trap();
-  uint32_t ret = payload_start();
-  if (ret) {
-    printf("Not found payload!\n");
-  }
+  before_boot_payload();
+  printf("Not found payload!\n");
 }
