@@ -15,7 +15,13 @@
 
 NAME = gcpt
 
-BUILD_DIR ?= ./build
+WORK_DIR = $(CUR_DIR)
+
+ifdef O
+	BUILD_DIR = $(shell readlink -f $(O))/build
+else
+	BUILD_DIR = $(WORK_DIR)/build
+endif
 
 OBJ_DIR ?= $(BUILD_DIR)/obj
 BINARY ?= $(BUILD_DIR)/$(NAME)
@@ -78,6 +84,7 @@ SRCS += resource/nanopb/pb_encode.c
 SRCS += $(patsubst %.proto,%.pb.c,$(shell find src/ -name "*.proto"))
 OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(basename $(SRCS))))
 
+.PRECIOUS: %.pb.c %.pb.h
 # Protobuf
 %.pb.c: %.proto
 	@python resource/nanopb/generator/nanopb_generator.py --strip-path $<
@@ -100,6 +107,7 @@ $(BINARY): $(OBJS)
 
 app: $(BINARY)
 
+.PHONY: clean
 clean:
 	@echo + RM ./build ./src/checkpoint.pb.c ./include/checkpoint.pb.h
 	@-rm -rf $(shell find src/ -name "*.pb.[ch]")
