@@ -15,7 +15,7 @@
 
 NAME = gcpt
 
-WORK_DIR = $(CUR_DIR)
+WORK_DIR = $(CURDIR)
 
 ifdef O
 	BUILD_DIR = $(shell readlink -f $(O))/build
