@@ -26,6 +26,9 @@ static char memory_buffer[0x1000];
 #endif /* ifdef ENCODE_DECODE_CHECK */
 
 void *get_memory_buffer() {
+#ifdef USING_BARE_METAL_WORKLOAD
+  return (void *)0x80000000;
+#else
 #ifdef USING_QEMU_DUAL_CORE_SYSTEM
   return (void *)0x80000000;
 #else
@@ -33,6 +36,7 @@ void *get_memory_buffer() {
   return memory_buffer;
   #endif /* ifdef ENCODE_DECODE_CHECK */
   return (void *)GCPT_DEVICE_ADDR;
+#endif
 #endif
 }
 
@@ -149,6 +153,18 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
   test_jump(cpu_id);
 #endif
 
+#ifdef USING_BARE_METAL_WORKLOAD
+  #define CPT_MAGIC_BUMBER 0xbeef
+  uint64_t *cpt_magic_number_addr = (void*)((uint64_t)0x80000000 + (uint64_t)0xECDB0);
+  if (*cpt_magic_number_addr != CPT_MAGIC_BUMBER) {
+    goto boot_payload;
+  }
+  multicore_decode_restore((uint64_t)get_memory_buffer(),
+                           1024 * 1024, cpu_id, NULL);
+  // should not be here
+  nemu_signal(SHOULD_NOT_BE_HERE);
+#endif
+
 #ifdef USING_QEMU_DUAL_CORE_SYSTEM
   #define CPT_MAGIC_BUMBER 0xbeef
   uint64_t *cpt_magic_number_addr = (void*)((uint64_t)0x80000000 + (uint64_t)0x300000 + (uint64_t)0xECDB0);
@@ -157,6 +173,8 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
   }
   multicore_decode_restore((uint64_t)get_memory_buffer() + 0x300000,
                            1024 * 1024, cpu_id, NULL);
+  // should not be here
+  nemu_signal(SHOULD_NOT_BE_HERE);
 #else
 
 #ifdef ENCODE_DECODE_CHECK
