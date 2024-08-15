@@ -3,15 +3,15 @@
 #include "csr.h"
 #include "encoding.h"
 #include "gcpt_asm.h"
-#include "spinlock.h"
 #include "gcpt_trap.h"
 #include "printf.h"
+#include "spinlock.h"
 #include <stdint.h>
 
 #define NOP 0x00000013
 
 spinlock_t globash_restore_lock;
-static uint64_t release_restore = 0;
+static uint64_t release_restore               = 0;
 static uint64_t global_atomic_restore_counter = 0;
 
 typedef union {
@@ -35,7 +35,7 @@ typedef union {
     }                                                  \
   }
 
-uint32_t generate_jal(int32_t imm, uint8_t rd) {
+static uint32_t generate_jal(int32_t imm, uint8_t rd) {
   JalInstr jal  = {0};
   jal.opcode    = 0b1101111;
   jal.rd        = rd;
@@ -48,23 +48,21 @@ uint32_t generate_jal(int32_t imm, uint8_t rd) {
   return instr;
 }
 
-int is_valid_imm(int32_t imm) {
+static int is_valid_imm(int32_t imm) {
   return (imm >= -(1 << 20)) && (imm < (1 << 20));
 }
 
-bool checkpoint_possibility_restore_check(uint64_t *csr_address,
-                                          int *rvv_could_restore,
-                                          int *rvh_could_restore,
-                                          int *rvf_could_restore,
-                                          int *should_jump_to_mepc,
-                                          uint64_t *mode_address) {
-  uint64_t host_mstatus = read_csr(mstatus);
-  uint64_t host_misa    = read_csr(misa);
+static void checkpoint_ext_check(uint64_t *csr_address, int *rvv_could_restore,
+                                 int *rvh_could_restore, int *rvf_could_restore,
+                                 int *should_jump_to_mepc,
+                                 uint64_t *mode_address) {
+
+  uint64_t host_misa = read_csr(misa);
 
   uint64_t checkpoint_mstatus =
-    *(uint64_t *)((uint64_t)csr_address + (0x300 << 3));
+    *(uint64_t *)((uint64_t)csr_address + (CSR_MSTATUS << 3));
   uint64_t checkpoint_misa =
-    *(uint64_t *)((uint64_t)csr_address + (0x301 << 3));
+    *(uint64_t *)((uint64_t)csr_address + (CSR_MISA << 3));
 
   uint64_t checkpoint_mode = *(mode_address);
 
@@ -85,8 +83,6 @@ bool checkpoint_possibility_restore_check(uint64_t *csr_address,
     if (((checkpoint_mstatus & MSTATUS_VS_INITIAL) == MSTATUS_VS_INITIAL) ||
         ((checkpoint_mstatus & MSTATUS_VS_CLEAN) == MSTATUS_VS_CLEAN) ||
         ((checkpoint_mstatus & MSTATUS_VS_DIRTY) == MSTATUS_VS_DIRTY)) {
-      // prepare mstatus
-      write_csr(mstatus, host_mstatus | MSTATUS_VS_INITIAL);
       // can restore V ext
       *rvv_could_restore = 1;
     } else {
@@ -98,16 +94,12 @@ bool checkpoint_possibility_restore_check(uint64_t *csr_address,
     if (((checkpoint_mstatus & MSTATUS_FS_INITIAL) == MSTATUS_FS_INITIAL) ||
         ((checkpoint_mstatus & MSTATUS_FS_CLEAN) == MSTATUS_FS_CLEAN) ||
         ((checkpoint_mstatus & MSTATUS_FS_DIRTY) == MSTATUS_FS_DIRTY)) {
-      // prepare mstatus
-      write_csr(mstatus, host_mstatus | MSTATUS_FS_INITIAL);
       // can restore F ext
       *rvf_could_restore = 1;
     } else {
       *rvf_could_restore = 0;
     }
   }
-
-  return true;
 }
 
 single_core_rvgc_rvv_rvh_memlayout
@@ -227,8 +219,7 @@ void multicore_decode_restore(uint64_t cpt_base_address,
   single_core_rvv_rvh_rvgc_restore(&multi_core_mem_layout, cpu_id);
 };
 
-
-void test_jump_target(){
+void test_jump_target() {
   printf("hello welcome get jump_inst\n");
   nemu_signal(GOOD_TRAP);
 }
@@ -244,8 +235,9 @@ void test_jump(int cpu_id) {
   uint32_t offset;
   uint32_t jal_instr;
 
-  for(int i = 0;i<128;i++){
-    printf("core i %d , nop addr %p core addr %p\n",i, &core0 + 3*(i+1) +i, ((char*)&core0) + (i<<4));
+  for (int i = 0; i < 128; i++) {
+    printf("core i %d , nop addr %p core addr %p\n", i,
+           &core0 + 3 * (i + 1) + i, ((char *)&core0) + (i << 4));
   }
   pc    += 3 * (cpu_id + 1) + cpu_id;
   offset = (uint32_t)((uint64_t)&test_jump_target - (uint64_t)pc);
@@ -261,12 +253,11 @@ void test_jump(int cpu_id) {
   jal_instr = generate_jal(offset, 0); // x0 is rd
   *pc       = jal_instr;
 
-  __builtin___clear_cache((char *)pc,
-                          (char *)pc + sizeof(uint32_t));
+  __builtin___clear_cache((char *)pc, (char *)pc + sizeof(uint32_t));
 
   extern void jump_to_core();
-//  void (*func_ptr)(void) = (void (*)(void))pc;
-//  func_ptr();
+  //  void (*func_ptr)(void) = (void (*)(void))pc;
+  //  func_ptr();
   jump_to_core();
 }
 #endif
@@ -276,22 +267,19 @@ void single_core_rvv_rvh_rvgc_restore(
   if (memlayout == NULL) {
     memlayout = &default_rvgc_v_h_memlayout;
   }
-  int rvv_could_restore = 0;
-  int rvh_could_restore = 0;
-  int rvf_could_restore = 0;
+  int rvv_could_restore   = 0;
+  int rvh_could_restore   = 0;
+  int rvf_could_restore   = 0;
   int should_jump_to_mepc = 0;
-  int all_cpu_num = *((uint64_t*)memlayout->csr_reserve);
+  int all_cpu_num         = *((uint64_t *)memlayout->csr_reserve);
 
-  if (!checkpoint_possibility_restore_check(
-        (void *)memlayout->csr_reg_cpt_addr, &rvv_could_restore,
-        &rvh_could_restore, &rvf_could_restore, &should_jump_to_mepc,
-        (void *)memlayout->mode_cpt_addr)) {
-    nemu_signal(GOOD_TRAP);
-  }
+  checkpoint_ext_check((void *)memlayout->csr_reg_cpt_addr, &rvv_could_restore,
+                       &rvh_could_restore, &rvf_could_restore,
+                       &should_jump_to_mepc, (void *)memlayout->mode_cpt_addr);
 
   if (should_jump_to_mepc) {
     extern void test_jump_target();
-    uint64_t target_pc = *((uint64_t*)memlayout->pc_cpt_addr);
+    uint64_t target_pc = *((uint64_t *)memlayout->pc_cpt_addr);
     extern int is_valid_imm(int32_t imm);
     extern uint32_t generate_jal(int32_t imm, uint8_t rd);
     extern uint32_t core0;
@@ -300,9 +288,9 @@ void single_core_rvv_rvh_rvgc_restore(
     uint32_t offset;
     uint32_t jal_instr;
 
-//    for(int i = 0;i<128;i++){
-//      printf("core i %d , nop addr %p\n",i, &core0 + 3*(i+1) +i);
-//    }
+    //    for(int i = 0;i<128;i++){
+    //      printf("core i %d , nop addr %p\n",i, &core0 + 3*(i+1) +i);
+    //    }
     pc    += 3 * (cpu_id + 1) + cpu_id;
     offset = (uint32_t)((uint64_t)target_pc - (uint64_t)pc);
 
@@ -317,9 +305,7 @@ void single_core_rvv_rvh_rvgc_restore(
     jal_instr = generate_jal(offset, 0); // x0 is rd
     *pc       = jal_instr;
 
-    __builtin___clear_cache((char *)pc,
-                            (char *)pc + sizeof(uint32_t));
-
+    __builtin___clear_cache((char *)pc, (char *)pc + sizeof(uint32_t));
   }
 
   if (rvh_could_restore) {

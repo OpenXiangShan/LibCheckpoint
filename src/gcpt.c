@@ -138,9 +138,10 @@ int try_restore_from_rvgc_original_single_core_memlayout() {
 
 void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
   __attribute__((unused)) int signal = GOOD_TRAP;
-  printf("Hello, gcpt at cpu %d\n", cpu_id);
   // must clear bss
   clear_bss();
+
+  printf("Hello, gcpt at cpu %d\n", cpu_id);
 
   enable_gcpt_trap();
 
