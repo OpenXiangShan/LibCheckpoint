@@ -114,7 +114,11 @@ single_core_rvgc_rvv_rvh_memlayout
 #ifdef USING_QEMU_DUAL_CORE_SYSTEM
     single_core_memlayout = &default_qemu_memlayout;
 #else
+    #ifdef USING_BARE_METAL_WORKLOAD
+    single_core_memlayout = &default_qemu_memlayout;
+    #else
     single_core_memlayout = &default_multicore_layout;
+    #endif
 #endif
   } else {
     single_core_memlayout = memlayout;
