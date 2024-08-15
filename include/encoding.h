@@ -34,6 +34,20 @@
 #define MSTATUS_MPRV        0x00020000
 #define MSTATUS_MPV         0x0000008000000000
 
+#define MSTATUS_VS_OFF     0x0
+#define MSTATUS_VS_INITIAL 0x200
+#define MSTATUS_VS_CLEAN   0x400
+#define MSTATUS_VS_DIRTY   0x600
+
+#define MSTATUS_FS_OFF     0x0
+#define MSTATUS_FS_INITIAL 0x2000
+#define MSTATUS_FS_CLEAN   0x4000
+#define MSTATUS_FS_DIRTY   0x6000
+
+#define MISA_V  0x200000
+#define MISA_H  0x80
+#define MISA_DF 0x28
+
 #define MSTATUS_SUM         0x00040000
 #define MSTATUS_MXR         0x00080000
 #define MSTATUS_TVM         0x00100000

@@ -48,10 +48,6 @@
 #define VTYPE_ID (0xc21)
 #define VLENB_ID (0xc22)
 
-#define VCSRS(f) \
-f(vcsr, 0x00f) \
-f(vstart, 0x008)
-
 #define CSRS_RESTORE(name, addr) \
   li t2, addr; \
   slli t2, t2, 3; \
@@ -60,23 +56,14 @@ f(vstart, 0x008)
   csrw addr, t1; \
 
 
+#define STORE_MSTATUS_STATE(state, reg) \
+  csrr reg, CSR_MSTATUS; \
+
+#define RESTORE_MSTATUS_STATE(state, reg) \
+  csrw CSR_MSTATUS, reg; \
+
 #define CLINT_MMIO              0x38000000
 #define CLINT_MTIMECMP          0x4000
 #define CLINT_MTIME             0xBFF8
-
-
-#define MSTATUS_VS_OFF     0<<9
-#define MSTATUS_VS_INITIAL 1<<9
-#define MSTATUS_VS_CLEAN   2<<9
-#define MSTATUS_VS_DIRTY   3<<9
-
-#define MSTATUS_FS_OFF     0<<13
-#define MSTATUS_FS_INITIAL 1<<13
-#define MSTATUS_FS_CLEAN   2<<13
-#define MSTATUS_FS_DIRTY   3<<13
-
-#define MISA_V  0x200000
-#define MISA_H  0x80
-#define MISA_DF 0x28
 
 #endif

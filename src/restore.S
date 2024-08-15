@@ -50,6 +50,12 @@ rvh_csr_restore:
 rvv_restore:
   # prepare v csrs, might not be necessary
   mv t0, a0
+
+  STORE_MSTATUS_STATE(MSTATUS_VS_DIRTY, t3)
+
+  li t1, MSTATUS_VS_DIRTY
+  csrs CSR_MSTATUS, t1
+
   li t2, VTYPE_ID
   slli t2, t2, 3
   add t2, t0, t2
@@ -59,7 +65,6 @@ rvv_restore:
   add t2, t0, t2
   ld t2, (t2)
   vsetvl t2, t2, t1
-  VCSRS(CSRS_RESTORE)
 
   addi a1, a1, 0
   vl1re64.v v0, (a1)
@@ -125,6 +130,9 @@ rvv_restore:
   vl1re64.v v30, (a1)
   addi a1, a1, 16
   vl1re64.v v31, (a1)
+
+  RESTORE_MSTATUS_STATE(MSTATUS_VS_DIRTY, t3)
+
   li a0, 1
   ret
 
@@ -153,6 +161,12 @@ restore_mtime_cmp:
   .global restore_float_vector
 restore_float_vector:
   mv t0, a0
+
+  STORE_MSTATUS_STATE(MSTATUS_FS_DIRTY, t3)
+
+  li t1, MSTATUS_FS_DIRTY
+  csrs CSR_MSTATUS, t1
+
   fld f0, (0*8)(t0)
   fld f1, (1*8)(t0)
   fld f2, (2*8)(t0)
@@ -185,6 +199,9 @@ restore_float_vector:
   fld f29, (29*8)(t0)
   fld f30, (30*8)(t0)
   fld f31, (31*8)(t0)
+
+  RESTORE_MSTATUS_STATE(MSTATUS_FS_DIRTY, t3)
+
   li a0, 1
   ret
 
