@@ -2,7 +2,7 @@
 
 OUTPUT_ARCH( "riscv" )
 
-ENTRY(_entry)
+ENTRY(place_of_gcpt_size)
 
 SECTIONS
 {
@@ -78,6 +78,10 @@ SECTIONS
 
   }
   e_restore = .;
+
+  .flags : {
+      *(.gcpt_flag)
+  }
 
   gcpt_end = .;
 
