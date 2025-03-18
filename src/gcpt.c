@@ -140,10 +140,19 @@ int try_restore_from_rvgc_original_single_core_memlayout() {
 }
 #endif
 
+
+spinlock_t bss_lock = {.lock = 0};
 void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
   __attribute__((unused)) int signal = GOOD_TRAP;
   // must clear bss
-  clear_bss();
+  if (cpu_id == 0) {
+    clear_bss();
+    mb();
+    atomic_set(&bss_lock.lock, 1);
+  } else{
+    while (atomic_read(&bss_lock.lock) == 0); 
+    mb();
+  }
 
   printf("Hello, gcpt at cpu %d\n", cpu_id);
 
