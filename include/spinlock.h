@@ -2,12 +2,12 @@
 
 #ifndef _RISCV_ATOMIC_H
 #define _RISCV_ATOMIC_H
-
+#include <stdint.h>
 // Currently, interrupts are always disabled in M-mode.
 #define disable_irqsave() (0)
 #define enable_irqrestore(flags) ((void) (flags))
 
-typedef struct { int lock; } spinlock_t;
+typedef struct { int64_t lock; } spinlock_t;
 #define SPINLOCK_INIT {0}
 
 #define mb() asm volatile ("fence" ::: "memory")
@@ -38,9 +38,9 @@ typedef struct { int lock; } spinlock_t;
   res; })
 #endif
 
-static inline int spinlock_trylock(spinlock_t* lock)
+static inline int64_t spinlock_trylock(spinlock_t* lock)
 {
-  int res = atomic_swap(&lock->lock, -1);
+  int64_t res = atomic_swap(&lock->lock, -1);
   mb();
   return res;
 }
