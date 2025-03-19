@@ -9,6 +9,7 @@ message checkpoint_header{
 };
 
 message single_core_rvgc_rvv_rvh_memlayout{
+  uint64 magic_number_cpt_addr   = 11;
   uint64 pc_cpt_addr             = 12;
   uint64 mode_cpt_addr           = 13;
   uint64 mtime_cpt_addr          = 14;

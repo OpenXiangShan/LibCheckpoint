@@ -19,6 +19,7 @@ typedef struct _checkpoint_header {
 } checkpoint_header;
 
 typedef struct _single_core_rvgc_rvv_rvh_memlayout {
+    uint64_t magic_number_cpt_addr;
     uint64_t pc_cpt_addr;
     uint64_t mode_cpt_addr;
     uint64_t mtime_cpt_addr;
@@ -43,9 +44,9 @@ extern "C" {
 
 /* Initializer values for message structs */
 #define checkpoint_header_init_default           {0, 0, 0, 0, 0}
-#define single_core_rvgc_rvv_rvh_memlayout_init_default {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+#define single_core_rvgc_rvv_rvh_memlayout_init_default {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define checkpoint_header_init_zero              {0, 0, 0, 0, 0}
-#define single_core_rvgc_rvv_rvh_memlayout_init_zero {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+#define single_core_rvgc_rvv_rvh_memlayout_init_zero {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define checkpoint_header_magic_number_tag       1
@@ -53,6 +54,7 @@ extern "C" {
 #define checkpoint_header_cpu_num_tag            3
 #define checkpoint_header_single_core_size_tag   5
 #define checkpoint_header_version_tag            6
+#define single_core_rvgc_rvv_rvh_memlayout_magic_number_cpt_addr_tag 11
 #define single_core_rvgc_rvv_rvh_memlayout_pc_cpt_addr_tag 12
 #define single_core_rvgc_rvv_rvh_memlayout_mode_cpt_addr_tag 13
 #define single_core_rvgc_rvv_rvh_memlayout_mtime_cpt_addr_tag 14
@@ -80,6 +82,7 @@ X(a, STATIC,   SINGULAR, UINT64,   version,           6)
 #define checkpoint_header_DEFAULT NULL
 
 #define single_core_rvgc_rvv_rvh_memlayout_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT64,   magic_number_cpt_addr,  11) \
 X(a, STATIC,   SINGULAR, UINT64,   pc_cpt_addr,      12) \
 X(a, STATIC,   SINGULAR, UINT64,   mode_cpt_addr,    13) \
 X(a, STATIC,   SINGULAR, UINT64,   mtime_cpt_addr,   14) \
@@ -108,7 +111,7 @@ extern const pb_msgdesc_t single_core_rvgc_rvv_rvh_memlayout_msg;
 /* Maximum encoded size of messages (where known) */
 #define CHECKPOINT_PB_H_MAX_SIZE                 single_core_rvgc_rvv_rvh_memlayout_size
 #define checkpoint_header_size                   55
-#define single_core_rvgc_rvv_rvh_memlayout_size  176
+#define single_core_rvgc_rvv_rvh_memlayout_size  187
 
 #ifdef __cplusplus
 } /* extern "C" */
