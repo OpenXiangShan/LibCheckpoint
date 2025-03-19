@@ -31,7 +31,7 @@ BINARY ?= $(BUILD_DIR)/$(NAME)
 INC_DIR += include resource/nanopb
 
 # Compilation flags
-CROSS_COMPILE ?= 
+CROSS_COMPILE ?= riscv64-unknown-linux-gnu-
 CC = $(CROSS_COMPILE)gcc
 LD = $(CROSS_COMPILE)gcc
 OBJDUMP = $(CROSS_COMPILE)objdump
