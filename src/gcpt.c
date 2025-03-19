@@ -25,7 +25,6 @@ static inline void *get_memory_buffer() {
 #endif
 }
 
-
 #define GLUE(a, b) a##b
 #define PROTOBUF_DECODE(FIELDS, FIELD_NAME)                              \
   static bool GLUE(FIELD_NAME, _decode)(pb_istream_t * stream,           \
@@ -46,7 +45,7 @@ __attribute__((unused))
 PROTOBUF_DECODE(single_core_rvgc_rvv_rvh_memlayout_fields, memlayout)
 
 spinlock_t bss_lock = {.lock = 0};
-void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
+void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id, uint64_t start_address) {
   __attribute__((unused)) int signal = GOOD_TRAP;
   // must clear bss
   if (cpu_id == 0) {
@@ -58,17 +57,17 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
     mb();
   }
 
-  mt_printf("Hello, gcpt at cpu %d\n", cpu_id);
+  mt_printf("Hello, gcpt at cpu %d start address %lx\n", cpu_id, start_address);
 
   enable_gcpt_trap();
 
 #ifdef USING_BARE_METAL_WORKLOAD
   #define CPT_MAGIC_BUMBER 0xbeef
-  uint64_t *cpt_magic_number_addr = (void*)((uint64_t)0x80000000 + (uint64_t)0xECDB0);
+  uint64_t *cpt_magic_number_addr = (void*)((uint64_t)start_address + (uint64_t)0xECDB0);
   if (*cpt_magic_number_addr != CPT_MAGIC_BUMBER) {
     goto boot_payload;
   }
-  multicore_decode_restore((uint64_t)get_memory_buffer(),
+  multicore_decode_restore((uint64_t)start_address,
                            1024 * 1024, cpu_id, NULL);
   // should not be here
   nemu_signal(SHOULD_NOT_BE_HERE);
@@ -76,11 +75,11 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
 
 #ifdef USING_QEMU_DUAL_CORE_SYSTEM
   #define CPT_MAGIC_BUMBER 0xbeef
-  uint64_t *cpt_magic_number_addr = (void*)((uint64_t)0x80000000 + (uint64_t)0x300000 + (uint64_t)0xECDB0);
+  uint64_t *cpt_magic_number_addr = (void*)((uint64_t)start_address + (uint64_t)0x300000 + (uint64_t)0xECDB0);
   if (*cpt_magic_number_addr != CPT_MAGIC_BUMBER) {
     goto boot_payload;
   }
-  multicore_decode_restore((uint64_t)get_memory_buffer() + 0x300000,
+  multicore_decode_restore((uint64_t)start_address + 0x300000,
                            1024 * 1024, cpu_id, NULL);
   // should not be here
   nemu_signal(SHOULD_NOT_BE_HERE);
@@ -90,7 +89,7 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
   single_core_rvgc_rvv_rvh_memlayout memlayout;
 
   pb_istream_t stream =
-    pb_istream_from_buffer((void *)get_memory_buffer(), PROTOBUF_BUFFER_SIZE);
+    pb_istream_from_buffer((void *)start_address, PROTOBUF_BUFFER_SIZE);
 
   bool header_decode_result    = false;
   bool memlayout_decode_result = false;
@@ -109,7 +108,7 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
     goto boot_payload;
   }
 
-  multicore_decode_restore((uint64_t)get_memory_buffer() + header.cpt_offset,
+  multicore_decode_restore((uint64_t)start_address + header.cpt_offset,
                            header.single_core_size, cpu_id, &memlayout);
 #endif
 

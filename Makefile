@@ -106,7 +106,7 @@ $(OBJ_DIR)/%.o: %.S
 $(BINARY): $(OBJS)
 	@echo + LD $@
 	@$(LD) -O0 -nostdlib -T restore.lds $(LDFLAGS) -o $@ $^
-	@$(OBJDUMP) -S $@ > $@.txt &
+	@$(OBJDUMP) -S $@ --start-address=0x0 --stop-address=0x100000 > $@.txt &
 	@$(OBJCOPY) -S --set-section-flags .bss=alloc,contents -O binary $@ $@.bin
 
 app: $(BINARY)

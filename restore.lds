@@ -12,12 +12,14 @@ SECTIONS
   /*--------------------------------------------------------------------*/
 
   /* Beginning of code and text segment */
-  . = 0x80000000;
+  . = ALIGN(4);
   gcpt_begin = .;
 
   s_text = .;
   .text : {
 
+    *(.restore.size)
+    *(.restore.location)
     *(.text.entry)
     *(.text.c_start)
     *(.text.enable_gcpt_trap)
