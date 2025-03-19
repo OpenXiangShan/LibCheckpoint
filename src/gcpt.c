@@ -48,54 +48,10 @@ void *get_memory_buffer() {
     return true;                                                         \
   }
 
-__attribute__((unused))
-PROTOBUF_DECODE(checkpoint_header_fields, header)
+__attribute__((unused)) PROTOBUF_DECODE(checkpoint_header_fields, header)
 
 __attribute__((unused))
 PROTOBUF_DECODE(single_core_rvgc_rvv_rvh_memlayout_fields, memlayout)
-
-// Depending on the link script, the hardware state may be overwritten and
-// therefore suspended
-#ifdef SUPPORT_ORIGINAL_CHECKPOINT
-int try_restore_from_rvgcvh_single_core_memlayout() {
-#define CPT_MAGIC_BUMBER 0xbeef
-#define BOOT_FLAG_ADDR   0x800ECDB0
-  if ((uint64_t)gcpt_end >= BOOT_FLAG_ADDR) {
-    printf("GCTP has cross over hardware status in memory, could not check rvgcvh memlayout checkpoint\n", "lalal");
-    return -1;
-  }
-
-  if ((*((uint32_t *)BOOT_FLAG_ADDR)) == CPT_MAGIC_BUMBER) {
-    single_core_rvv_rvh_rvgc_restore(&default_rvgc_v_h_memlayout);
-    return 0;
-  }else {
-    printf("GCPT Not found single core rvgcvh checkpoint boot flag in memory\n");
-    return -1;
-  }
-#undef CPT_MAGIC_BUMBER
-#undef BOOT_FLAG_ADDR
-}
-
-int try_restore_from_rvgc_original_single_core_memlayout() {
-#define CPT_MAGIC_BUMBER 0xbeef
-#define BOOT_FLAG_ADDR   0x80000f00
-  if ((uint64_t)gcpt_end >= BOOT_FLAG_ADDR) {
-    printf("GCTP has cross over hardware status in memory, could not check original checkpoint\n");
-    return -1;
-  }
-
-  if ((*((uint32_t *)BOOT_FLAG_ADDR)) == CPT_MAGIC_BUMBER) {
-    single_core_rvv_rvh_rvgc_restore(&default_original_rvgc_memlayout);
-    return 0;
-  }else {
-    printf("GCPT Not found original single core checkpoint boot flag in memory\n");
-    return -1;
-  }
-#undef CPT_MAGIC_BUMBER
-#undef BOOT_FLAG_ADDR
-}
-#endif
-
 
 spinlock_t bss_lock = {.lock = 0};
 void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
