@@ -15,21 +15,13 @@
 #define MAGIC_NUMBER         0xdeadbeef
 #define RESET_VECTOR         0x80000000
 #define BOOT_LOADER          0x80100000
-#define GCPT_DEVICE_ADDR     0x60000000
 #define PROTOBUF_BUFFER_SIZE 4096
 
-// #define USING_QEMU_DUAL_CORE_SYSTEM
-// #define ENCODE_DECODE_CHECK
-
-void *get_memory_buffer() {
-#ifdef USING_BARE_METAL_WORKLOAD
-  return (void *)0x80000000;
+static inline void *get_memory_buffer() {
+#ifdef USING_FLASH_CHECKPOINT
+  return (void *)0x10000000;
 #else
-#ifdef USING_QEMU_DUAL_CORE_SYSTEM
   return (void *)0x80000000;
-#else
-  return (void *)GCPT_DEVICE_ADDR;
-#endif
 #endif
 }
 
