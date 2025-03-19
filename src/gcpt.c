@@ -25,6 +25,26 @@ static inline void *get_memory_buffer() {
 #endif
 }
 
+static inline void set_checkpoint_header(checkpoint_header *header,
+                                         uint64_t cpt_offset,
+                                         uint64_t single_core_size) {
+  header->cpt_offset       = cpt_offset;
+  header->single_core_size = single_core_size;
+}
+
+static inline bool
+  check_magic_number(checkpoint_header *header,
+                     single_core_rvgc_rvv_rvh_memlayout *memlayout,
+                     uint64_t cpt_base_address, uint64_t magic_number) {
+  uint64_t *cpt_magic_number_addr =
+    (void *)(cpt_base_address + (uint64_t)header->cpt_offset +
+             (uint64_t)memlayout->magic_number_cpt_addr);
+  if (*cpt_magic_number_addr != magic_number) {
+    return false;
+  }
+  return true;
+}
+
 #define GLUE(a, b) a##b
 #define PROTOBUF_DECODE(FIELDS, FIELD_NAME)                              \
   static bool GLUE(FIELD_NAME, _decode)(pb_istream_t * stream,           \
@@ -59,35 +79,22 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id, uint64_t
 
   mt_printf("Hello, gcpt at cpu %d start address %lx\n", cpu_id, start_address);
 
+  __attribute__((__unused__)) checkpoint_header header = {0};
+  __attribute__((__unused__)) single_core_rvgc_rvv_rvh_memlayout memlayout = {0};
+
   enable_gcpt_trap();
 
 #ifdef USING_BARE_METAL_WORKLOAD
-  #define CPT_MAGIC_BUMBER 0xbeef
-  uint64_t *cpt_magic_number_addr = (void*)((uint64_t)start_address + (uint64_t)0xECDB0);
-  if (*cpt_magic_number_addr != CPT_MAGIC_BUMBER) {
-    goto boot_payload;
-  }
-  multicore_decode_restore((uint64_t)start_address,
-                           1024 * 1024, cpu_id, NULL);
-  // should not be here
-  nemu_signal(SHOULD_NOT_BE_HERE);
+  memlayout = default_qemu_memlayout;
+  set_checkpoint_header(&header, 0, 1024 * 1024);
 #endif
 
 #ifdef USING_QEMU_DUAL_CORE_SYSTEM
-  #define CPT_MAGIC_BUMBER 0xbeef
-  uint64_t *cpt_magic_number_addr = (void*)((uint64_t)start_address + (uint64_t)0x300000 + (uint64_t)0xECDB0);
-  if (*cpt_magic_number_addr != CPT_MAGIC_BUMBER) {
-    goto boot_payload;
-  }
-  multicore_decode_restore((uint64_t)start_address + 0x300000,
-                           1024 * 1024, cpu_id, NULL);
-  // should not be here
-  nemu_signal(SHOULD_NOT_BE_HERE);
-#else
+  memlayout = default_qemu_memlayout;
+  set_checkpoint_header(&header, 0x300000, 1024 * 1024);
+#endif
 
-  checkpoint_header header;
-  single_core_rvgc_rvv_rvh_memlayout memlayout;
-
+#ifdef USING_DEFAULT_CONFIG
   pb_istream_t stream =
     pb_istream_from_buffer((void *)start_address, PROTOBUF_BUFFER_SIZE);
 
@@ -107,10 +114,15 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id, uint64_t
     printf("Decode memlayout failed\n");
     goto boot_payload;
   }
+#else
+#define CPT_MAGIC_BUMBER 0xbeef
+  if (!check_magic_number(&header, &memlayout, 0x80000000, CPT_MAGIC_BUMBER)) {
+    goto boot_payload;
+  }
+#endif
 
   multicore_decode_restore((uint64_t)start_address + header.cpt_offset,
                            header.single_core_size, cpu_id, &memlayout);
-#endif
 
   // should not be here
   nemu_signal(SHOULD_NOT_BE_HERE);
