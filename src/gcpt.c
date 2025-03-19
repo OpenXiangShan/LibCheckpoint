@@ -145,7 +145,7 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
   // must clear bss
   clear_bss();
 
-  printf("Hello, gcpt at cpu %d\n", cpu_id);
+  mt_printf("Hello, gcpt at cpu %d\n", cpu_id);
 
   enable_gcpt_trap();
 
@@ -215,8 +215,8 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
   extern void payload_bin();
   extern void before_boot_payload();
 boot_payload:
-  printf("Will boot payload from %p\n", payload_bin);
+  mt_printf("Will boot payload from %p\n", payload_bin);
   disable_gcpt_trap();
   before_boot_payload();
-  printf("Not found payload!\n");
+  mt_printf("Not found payload!\n");
 }

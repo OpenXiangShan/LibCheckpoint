@@ -6,6 +6,7 @@
 #include "gcpt_trap.h"
 #include "printf.h"
 #include "spinlock.h"
+#include "utils.h"
 #include <stdint.h>
 
 #define NOP 0x00000013
@@ -299,7 +300,7 @@ void single_core_rvv_rvh_rvgc_restore(
     offset = (uint32_t)((uint64_t)target_pc - (uint64_t)pc);
 
     if (!is_valid_imm(offset)) {
-      printf("Offset is out of range for JAL instruction pc is %p jump target "
+      mt_printf("Offset is out of range for JAL instruction pc is %p jump target "
              "addr is %p\n",
              pc, target_pc);
       nemu_signal(GCPT_GET_BAD_IMM);
@@ -335,7 +336,7 @@ void single_core_rvv_rvh_rvgc_restore(
 
   spinlock_lock(&globash_restore_lock);
   atomic_add(&global_atomic_restore_counter, 1);
-  printf("all cpu num %d atomic flag %d\n", all_cpu_num,
+  mt_printf("all cpu num %d atomic flag %d\n", all_cpu_num,
          atomic_read(&global_atomic_restore_counter));
   if (atomic_read(&global_atomic_restore_counter) != all_cpu_num &&
       all_cpu_num != 0) {
