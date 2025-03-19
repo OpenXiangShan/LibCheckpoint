@@ -21,10 +21,6 @@
 // #define USING_QEMU_DUAL_CORE_SYSTEM
 // #define ENCODE_DECODE_CHECK
 
-#ifdef ENCODE_DECODE_CHECK
-static char memory_buffer[0x1000];
-#endif /* ifdef ENCODE_DECODE_CHECK */
-
 void *get_memory_buffer() {
 #ifdef USING_BARE_METAL_WORKLOAD
   return (void *)0x80000000;
@@ -32,50 +28,10 @@ void *get_memory_buffer() {
 #ifdef USING_QEMU_DUAL_CORE_SYSTEM
   return (void *)0x80000000;
 #else
-  #ifdef ENCODE_DECODE_CHECK
-  return memory_buffer;
-  #endif /* ifdef ENCODE_DECODE_CHECK */
   return (void *)GCPT_DEVICE_ADDR;
 #endif
 #endif
 }
-
-#ifdef ENCODE_DECODE_CHECK
-static bool encode_check(char *mem_buffer) {
-  bool status;
-  pb_ostream_t stream = pb_ostream_from_buffer((void *)mem_buffer, 4096);
-
-  status = pb_encode_ex(&stream, checkpoint_header_fields,
-                        &multicore_default_header, PB_ENCODE_NULLTERMINATED);
-  if (!status) {
-    printf("LOG: header encode error %s\n", stream.errmsg);
-    return false;
-  }
-
-  status = pb_encode_ex(&stream, single_core_rvgc_rvv_rvh_memlayout_fields,
-                        &multicore_default_layout, PB_ENCODE_NULLTERMINATED);
-  if (!status) {
-    printf("LOG: body encode error %s\n", stream.errmsg);
-    return false;
-  }
-
-  return true;
-}
-
-static void try_encode() {
-  int signal = GOOD_TRAP;
-  if (!encode_check(memory_buffer)) {
-    signal = FLAG_CHECK_ERROR;
-    goto failed;
-  }
-  printf("write success\n");
-
-failed:
-  printf("Check error from encode or decode\n");
-  signal = ENCODE_DECODE_CHECK_ERROR;
-  nemu_signal(signal);
-}
-#endif
 
 
 #define GLUE(a, b) a##b
@@ -158,11 +114,6 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
 
   enable_gcpt_trap();
 
-#ifdef TEST_JUMP
-  extern void test_jump(int cpu_id);
-  test_jump(cpu_id);
-#endif
-
 #ifdef USING_BARE_METAL_WORKLOAD
   #define CPT_MAGIC_BUMBER 0xbeef
   uint64_t *cpt_magic_number_addr = (void*)((uint64_t)0x80000000 + (uint64_t)0xECDB0);
@@ -186,10 +137,6 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id) {
   // should not be here
   nemu_signal(SHOULD_NOT_BE_HERE);
 #else
-
-#ifdef ENCODE_DECODE_CHECK
-  try_encode();
-#endif /* ifdef ENCODE_DECODE_CHECK */
 
   checkpoint_header header;
   single_core_rvgc_rvv_rvh_memlayout memlayout;
