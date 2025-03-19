@@ -9,12 +9,20 @@
 
   .option norvc
 
-  .section ".text.entry", "ax", @progbits
+  .section ".restore.size", "ax", @progbits
   .global place_of_gcpt_size
 place_of_gcpt_size:
   j boot_check
   .word gcpt_end-gcpt_begin
 
+  .section ".restore.location", "ax", @progbits
+get_restorer_entry_pc:
+  auipc t0, 0
+  li t1, 0x10
+  sub t0, t0, t1
+  jalr x0, 0(ra)
+
+  .section ".text.entry", "ax", @progbits
 boot_check:
   la s0, read_complete_flag #load read complete flag address
   ld t1, (s0)
@@ -38,6 +46,8 @@ _entry:
   add t0, t0, t1
   la sp, gcpt_stack
   add sp, sp, t0
+  jal ra, get_restorer_entry_pc
+  mv t0, a1
   j gcpt_c_start
 
   .section ".bss.stack", "aw"
