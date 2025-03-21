@@ -28,7 +28,7 @@ BINARY ?= $(BUILD_DIR)/$(NAME)
 
 .DEFAULT_GOAL = app
 
-INC_DIR += include resource/nanopb
+INC_DIR += $(WORK_DIR)/include $(WORK_DIR)/resource/nanopb
 
 # Compilation flags
 CROSS_COMPILE ?= riscv64-unknown-linux-gnu-
@@ -63,6 +63,8 @@ OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(basename $(SRCS))))
 %.pb.c: %.proto
 	@python resource/nanopb/generator/nanopb_generator.py --strip-path $<
 	@mv $(basename $<).pb.h include/
+	@mkdir -p export_include
+	@cp include/$(notdir $(basename $<)).pb.h export_include/
 
 # Compilation patterns
 $(OBJ_DIR)/%.o: %.c
