@@ -6,6 +6,7 @@
 #include "gcpt_trap.h"
 #include "printf.h"
 #include "spinlock.h"
+#include "cpt_default_values.h"
 #include "utils.h"
 #include <stdint.h>
 
