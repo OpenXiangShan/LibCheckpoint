@@ -49,6 +49,7 @@ __attribute__((unused)) static csr_id2name_t regs[4096] = {
 
 __attribute__((unused)) static single_core_rvgc_rvv_rvh_memlayout
   default_rvgc_v_h_memlayout = {
+    .magic_number_cpt_addr = 0x800ECDB0,
     .pc_cpt_addr         = 0x800ECDB8,
     .mode_cpt_addr       = 0x800ECDC0,
     .mtime_cpt_addr      = 0x800ECDC8,
@@ -68,6 +69,7 @@ __attribute__((unused)) static single_core_rvgc_rvv_rvh_memlayout
 
 __attribute__((unused)) static single_core_rvgc_rvv_rvh_memlayout
   default_qemu_memlayout = {
+    .magic_number_cpt_addr = 0xECDB0,
     .pc_cpt_addr         = 0xECDB8,
     .mode_cpt_addr       = 0xECDC0,
     .mtime_cpt_addr      = 0xECDC8,
@@ -96,12 +98,13 @@ __attribute__((unused)) static checkpoint_header multicore_default_header = {
 
 __attribute__((unused)) static single_core_rvgc_rvv_rvh_memlayout
   default_multicore_layout = {
-    .pc_cpt_addr         = 0x0,
-    .mode_cpt_addr       = 0x8,
-    .mtime_cpt_addr      = 0x10,
-    .mtime_cmp_cpt_addr  = 0x18,
-    .misc_done_cpt_addr  = 0x20,
-    .misc_reserve        = 0x28,
+    .magic_number_cpt_addr = 0x0,
+    .pc_cpt_addr         = 0x8,
+    .mode_cpt_addr       = 0x10,
+    .mtime_cpt_addr      = 0x18,
+    .mtime_cmp_cpt_addr  = 0x20,
+    .misc_done_cpt_addr  = 0x28,
+    .misc_reserve        = 0x30,
     .int_reg_cpt_addr    = 0x1000,
     .int_reg_done        = 0x1128,
     .float_reg_cpt_addr  = 0x1130,
