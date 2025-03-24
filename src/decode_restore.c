@@ -111,6 +111,7 @@ single_core_rvgc_rvv_rvh_memlayout
   uint64_t offset = cpu_id * single_core_size + base_addr;
 
   single_core_rvgc_rvv_rvh_memlayout cpux_memlayout = {
+    .magic_number_cpt_addr = memlayout->magic_number_cpt_addr + offset,
     .pc_cpt_addr         = memlayout->pc_cpt_addr + offset,
     .mode_cpt_addr       = memlayout->mode_cpt_addr + offset,
     .mtime_cpt_addr      = memlayout->mtime_cpt_addr + offset,
