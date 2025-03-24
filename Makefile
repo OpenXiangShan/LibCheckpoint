@@ -65,6 +65,7 @@ OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(basename $(SRCS))))
 	@mv $(basename $<).pb.h include/
 	@mkdir -p export_include
 	@cp include/$(notdir $(basename $<)).pb.h export_include/
+	@cp include/cpt_default_values.h export_include/
 
 # Compilation patterns
 $(OBJ_DIR)/%.o: %.c
