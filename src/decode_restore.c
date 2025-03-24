@@ -110,37 +110,23 @@ single_core_rvgc_rvv_rvh_memlayout
   // percpu hardware status offset
   uint64_t offset = cpu_id * single_core_size + base_addr;
 
-  single_core_rvgc_rvv_rvh_memlayout *single_core_memlayout;
-  if (memlayout == NULL) {
-#ifdef USING_QEMU_DUAL_CORE_SYSTEM
-    single_core_memlayout = &default_qemu_memlayout;
-#else
-    #ifdef USING_BARE_METAL_WORKLOAD
-    single_core_memlayout = &default_qemu_memlayout;
-    #else
-    single_core_memlayout = &default_multicore_layout;
-    #endif
-#endif
-  } else {
-    single_core_memlayout = memlayout;
-  }
-
   single_core_rvgc_rvv_rvh_memlayout cpux_memlayout = {
-    .pc_cpt_addr         = single_core_memlayout->pc_cpt_addr + offset,
-    .mode_cpt_addr       = single_core_memlayout->mode_cpt_addr + offset,
-    .mtime_cpt_addr      = single_core_memlayout->mtime_cpt_addr + offset,
-    .mtime_cmp_cpt_addr  = single_core_memlayout->mtime_cmp_cpt_addr + offset,
-    .misc_done_cpt_addr  = single_core_memlayout->misc_done_cpt_addr + offset,
-    .misc_reserve        = single_core_memlayout->misc_reserve + offset,
-    .int_reg_cpt_addr    = single_core_memlayout->int_reg_cpt_addr + offset,
-    .int_reg_done        = single_core_memlayout->int_reg_done + offset,
-    .float_reg_cpt_addr  = single_core_memlayout->float_reg_cpt_addr + offset,
-    .float_reg_done      = single_core_memlayout->float_reg_done + offset,
-    .csr_reg_cpt_addr    = single_core_memlayout->csr_reg_cpt_addr + offset,
-    .csr_reg_done        = single_core_memlayout->csr_reg_done + offset,
-    .csr_reserve         = single_core_memlayout->csr_reserve + offset,
-    .vector_reg_cpt_addr = single_core_memlayout->vector_reg_cpt_addr + offset,
-    .vector_reg_done     = single_core_memlayout->vector_reg_done + offset,
+    .magic_number_cpt_addr = memlayout->magic_number_cpt_addr + offset,
+    .pc_cpt_addr         = memlayout->pc_cpt_addr + offset,
+    .mode_cpt_addr       = memlayout->mode_cpt_addr + offset,
+    .mtime_cpt_addr      = memlayout->mtime_cpt_addr + offset,
+    .mtime_cmp_cpt_addr  = memlayout->mtime_cmp_cpt_addr + offset,
+    .misc_done_cpt_addr  = memlayout->misc_done_cpt_addr + offset,
+    .misc_reserve        = memlayout->misc_reserve + offset,
+    .int_reg_cpt_addr    = memlayout->int_reg_cpt_addr + offset,
+    .int_reg_done        = memlayout->int_reg_done + offset,
+    .float_reg_cpt_addr  = memlayout->float_reg_cpt_addr + offset,
+    .float_reg_done      = memlayout->float_reg_done + offset,
+    .csr_reg_cpt_addr    = memlayout->csr_reg_cpt_addr + offset,
+    .csr_reg_done        = memlayout->csr_reg_done + offset,
+    .csr_reserve         = memlayout->csr_reserve + offset,
+    .vector_reg_cpt_addr = memlayout->vector_reg_cpt_addr + offset,
+    .vector_reg_done     = memlayout->vector_reg_done + offset,
   };
 
   return cpux_memlayout;
