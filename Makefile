@@ -42,40 +42,10 @@ CFLAGS += -nostdlib -fno-common -ffreestanding
 
 LDFLAGS =
 
-ifdef GCPT_PAYLOAD_PATH
-LDFLAGS += -Xlinker --defsym GCPT_PAYLOAD_PATH=1
-CFLAGS += -DGCPT_PAYLOAD_PATH=\"$(GCPT_PAYLOAD_PATH)\"
-else
-GCPT_PAYLOAD_PATH =
+ifeq ($(wildcard CONFIG.mk),)
+	$(error "CONFIG.mk not found. Please run ./configure first.")
 endif
-
-ifdef GCPT_PAYLOAD_POSITION
-LDFLAGS += -Xlinker --defsym GCPT_PAYLOAD_POSITION=$(GCPT_PAYLOAD_POSITION)
-CFLAGS += -DGCPT_PAYLOAD_POSITION=$(GCPT_PAYLOAD_POSITION)
-else
-GCPT_PAYLOAD_OFFSET =
-endif
-
-ifdef DISPLAY_CPU_N
-CFLAGS += -DDISPLAY=$(DISPLAY_CPU_N)
-endif
-
-ifdef STOP_CPU_N
-CFLAGS += -DSTOP_CPU=$(STOP_CPU_N)
-endif
-
-ifdef USING_QEMU_DUAL_CORE_SYSTEM
-CFLAGS += -DUSING_QEMU_DUAL_CORE_SYSTEM=$(USING_QEMU_DUAL_CORE_SYSTEM)
-endif
-
-ifdef USING_BARE_METAL_WORKLOAD
-CFLAGS += -DUSING_BARE_METAL_WORKLOAD=$(USING_BARE_METAL_WORKLOAD)
-endif
-
-ifdef ENCODE_DECODE_CHECK
-CFLAGS += -DENCODE_DECODE_CHECK
-endif
-
+include CONFIG.mk
 #CSANITIZE := undefined
 #
 #CFLAGS += $(addprefix -fsanitize=, $(CSANITIZE))
@@ -106,7 +76,7 @@ $(OBJ_DIR)/%.o: %.S
 $(BINARY): $(OBJS)
 	@echo + LD $@
 	@$(LD) -O0 -nostdlib -T restore.lds $(LDFLAGS) -o $@ $^
-	@$(OBJDUMP) -S $@ > $@.txt &
+	@$(OBJDUMP) -S $@ --start-address=0x0 --stop-address=0x100000 > $@.txt &
 	@$(OBJCOPY) -S --set-section-flags .bss=alloc,contents -O binary $@ $@.bin
 
 app: $(BINARY)
