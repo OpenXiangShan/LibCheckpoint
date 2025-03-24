@@ -45,11 +45,11 @@ __attribute__((unused)) static single_core_rvgc_rvv_rvh_memlayout
 
 __attribute__((unused)) static checkpoint_header multicore_default_header = {
   .magic_number = 0xdeadbeef,
-  .version      = 0x20240205,
-  .cpu_num      = 1,
   .cpt_offset =
     sizeof(checkpoint_header) + sizeof(single_core_rvgc_rvv_rvh_memlayout),
-  .single_core_size = 1 * 1024 * 1024 // 1M
+  .cpu_num      = 1,
+  .single_core_size = 1 * 1024 * 1024, // 1M
+  .version      = 0x20240205
 };
 
 __attribute__((unused)) static single_core_rvgc_rvv_rvh_memlayout
