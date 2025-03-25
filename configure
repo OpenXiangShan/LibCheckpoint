@@ -7,6 +7,7 @@ DISPLAY_CPU_N=""
 STOP_CPU_N=""
 USING_QEMU_DUAL_CORE_SYSTEM=""
 USING_BARE_METAL_WORKLOAD=""
+USING_DEFAULT_CONFIG=""
 MODE="normal"
 
 # 解析命令行参数
@@ -58,6 +59,7 @@ done
 
 case "$MODE" in
   normal)
+    USING_DEFAULT_CONFIG="1"
     ;;
   dual_core)
     USING_QEMU_DUAL_CORE_SYSTEM="1"
@@ -93,6 +95,9 @@ esac
   fi
   if [ -n "$USING_BARE_METAL_WORKLOAD" ]; then
     echo "CFLAGS += -DUSING_BARE_METAL_WORKLOAD=$USING_BARE_METAL_WORKLOAD"
+  fi
+  if [ -n "$USING_DEFAULT_CONFIG" ]; then
+    echo "CFLAGS += -DUSING_DEFAULT_CONFIG=$USING_DEFAULT_CONFIG"
   fi
 } > CONFIG.mk
 
