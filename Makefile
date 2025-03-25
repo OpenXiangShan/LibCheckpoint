@@ -16,6 +16,7 @@
 NAME = gcpt
 
 WORK_DIR = $(CURDIR)
+EXPORT_DIR = $(WORK_DIR)/export_include
 
 ifdef O
 	BUILD_DIR = $(shell readlink -f $(O))/build
@@ -42,10 +43,13 @@ CFLAGS += -nostdlib -fno-common -ffreestanding
 
 LDFLAGS =
 
+ifneq ($(filter clean,$(MAKECMDGOALS)),)
+else
 ifeq ($(wildcard CONFIG.mk),)
-	$(error "CONFIG.mk not found. Please run ./configure first.")
+$(error "CONFIG.mk not found. Please run ./configure first.")
 endif
 include CONFIG.mk
+endif
 #CSANITIZE := undefined
 #
 #CFLAGS += $(addprefix -fsanitize=, $(CSANITIZE))
@@ -64,8 +68,8 @@ OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(basename $(SRCS))))
 	@python resource/nanopb/generator/nanopb_generator.py --strip-path $<
 	@mv $(basename $<).pb.h include/
 	@mkdir -p export_include
-	@cp include/$(notdir $(basename $<)).pb.h export_include/
-	@cp include/cpt_default_values.h export_include/
+	@cp include/$(notdir $(basename $<)).pb.h $(EXPORT_DIR)/
+	@cp include/cpt_default_values.h $(EXPORT_DIR)/
 
 # Compilation patterns
 $(OBJ_DIR)/%.o: %.c
@@ -89,3 +93,5 @@ clean:
 	@echo + RM ./build ./src/checkpoint.pb.c ./include/checkpoint.pb.h
 	@-rm -rf $(shell find src/ -name "*.pb.[ch]")
 	@-rm -rf $(BUILD_DIR)
+	@-rm -rf $(EXPORT_DIR)
+	@-rm -rf CONFIG.mk
