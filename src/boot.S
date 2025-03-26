@@ -1,12 +1,6 @@
 #define COMPLETE_FLAG 0xcaff
 #define GCPT_INCOMPLETE         0x2
 
-#ifndef GCPT_PAYLOAD_POSITION
-  #define TARGET_ADDRESS 0x80100000
-#else
-  #define TARGET_ADDRESS GCPT_PAYLOAD_POSITION
-#endif
-
   .option norvc
 
   .section ".restore.size", "ax", @progbits
@@ -18,7 +12,7 @@ place_of_gcpt_size:
   .section ".restore.location", "ax", @progbits
 get_restorer_entry_pc:
   auipc t0, 0
-  li t1, 0x10
+  li t1, 0x8
   sub t0, t0, t1
   jalr x0, 0(ra)
 
@@ -47,7 +41,7 @@ _entry:
   la sp, gcpt_stack
   add sp, sp, t0
   jal ra, get_restorer_entry_pc
-  mv t0, a1
+  mv a1, t0
   j gcpt_c_start
 
   .section ".bss.stack", "aw"
@@ -67,9 +61,9 @@ read_complete_flag:
   .align 4
   .global before_boot_payload
 before_boot_payload:
+  mv t0, a0
   li a1, 0
   csrr a0, mhartid
-  li t0, TARGET_ADDRESS
   jalr zero, 0(t0)
 
   .section ".payload.bin", "ax", %progbits
