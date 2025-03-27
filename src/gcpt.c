@@ -11,10 +11,9 @@
 #include <pb_encode.h>
 #include <stdint.h>
 #include <string.h>
+#include "cpt_default_values.h"
 
 #define MAGIC_NUMBER         0xdeadbeef
-#define RESET_VECTOR         0x80000000
-#define BOOT_LOADER          0x80100000
 #define PROTOBUF_BUFFER_SIZE 4096
 
 static inline void *get_memory_buffer() {
@@ -128,10 +127,17 @@ void __attribute__((section(".text.c_start"))) gcpt_c_start(int cpu_id, uint64_t
   nemu_signal(SHOULD_NOT_BE_HERE);
 
   extern void payload_bin();
-  extern void before_boot_payload();
+  extern void before_boot_payload(uint64_t target_address);
 boot_payload:
-  mt_printf("Will boot payload from %p\n", payload_bin);
   disable_gcpt_trap();
-  before_boot_payload();
+  uint64_t target_address;
+  if (start_address != 0x80000000) {
+    target_address = 0x80000000; // gcpt at flash, boot payload from memory
+  } else{
+    target_address = (uint64_t)payload_bin; // gcpt at memory, boot payload from memory
+  }
+
+  mt_printf("Will boot payload from %p\n", target_address);
+  before_boot_payload(target_address);
   mt_printf("Not found payload!\n");
 }

@@ -81,6 +81,7 @@ SECTIONS
   }
   e_restore = .;
 
+  . = ALIGN(8);
   .flags : {
       *(.gcpt_flag)
   }
@@ -89,7 +90,7 @@ SECTIONS
 
   payload_start = .;
 
-  . = DEFINED(GCPT_PAYLOAD_PATH) ? 0x800FFFD0 : .;
+  . = DEFINED(GCPT_PAYLOAD_PATH) ? gcpt_begin + 0xFFFD0 : .;
 
   .before_payload :
   {
