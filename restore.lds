@@ -81,6 +81,7 @@ SECTIONS
   }
   e_restore = .;
 
+  . = ALIGN(8);
   .flags : {
       *(.gcpt_flag)
   }
