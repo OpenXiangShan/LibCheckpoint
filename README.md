@@ -1,35 +1,35 @@
 # LibCheckpoint
 
-LibCheckpoint is a restorer of "rvgcpt checkpoint" for restoring in-memory architectural state into registers.
+LibCheckpoint is a restorer for "rvgcpt" checkpoints, restoring the in-memory architectural state into registers.
 
-Provides the following functions:
-- restore checkpoint which using protobuf point to memory layout (max cores: 128)
-- restore dual core "rv64gcbvh checkpoint" which using QEMU (https://github.com/OpenXiangShan/qemu/tree/9.0.0_checkpoint) generate.
-- restore single core "rv64gcbvh checkpoint" which using QEMU (https://github.com/OpenXiangShan/qemu/tree/9.0.0_checkpoint) or NEMU (https://github.com/OpenXiangShan/NEMU) generate.
-- limited M-mode checkpoint restore (it is best not to try to generate checkpoints on bare metal programs, it makes debugging and support difficult)
-- output the in-memory architecture state (before recovery)
-- block core N (using for debug)
+It provides the following functions:
+- Restore a checkpoint that uses Protobuf to define the memory layout (max cores: 128).
+- Restore a dual-core "rv64gcbvh" checkpoint, generated using QEMU (https://github.com/OpenXiangShan/qemu/tree/9.0.0_checkpoint).
+- Restore a single-core "rv64gcbvh" checkpoint, generated using either QEMU (https://github.com/OpenXiangShan/qemu/tree/9.0.0_checkpoint) or NEMU (https://github.com/OpenXiangShan/NEMU)
+- Add limited support for restoring from M-mode (it is best not to generate checkpoints on bare-metal programs, as this makes debugging and support difficult).
+- Output the in-memory architectural state (before recovery).
+- Block core N (used for debugging).
 
-## How to
+## How to Use
 
-1. Init
+1. Initialize the environment
 ```
 pip install --upgrade protobuf grpcio-tools
 git submodule update --init
 ```
 
-2. Build for restore checkpoint that using protobuf (stable)
+2. Build for restoring a checkpoint using Protobuf (stable)
 ```
 ./configure && make -j
 ```
 
-3. Build for qemu dual core checkpoint that put serialize data at 0x80300000~0x80800000 (stable)
+3. Build for a dual core QEMU checkpoint with serialized data at 0x80300000~0x80800000 (stable)
 ```
 ./configure --mode=dual_core && make -j
 
 ```
 
-4. Build restorer that can pause a core's operation (stable)
+4. Build the restorer than can pause a core's operation (stable)
 ```bash
 ./configure --stop_cpu=N && make -j
 ```
@@ -39,13 +39,13 @@ git submodule update --init
 ./configure --display_cpu=0 # n could be any hartid, one appropriate approach is to suspend one of the cores in a dual-core checkpoint and output the serialized data from the other core
 ```
 
-6. Build for link next level bootloader (stable)
+6. Build for linking to the next-level bootloader (stable)
 ```
 ./configure --gcpt_payload=/path/to/bbl.bin # default: put next level bootloader at address 0x80100000
 ./configure --gcpt_payload=/path/to/bbl.bin --gcpt_payload_position=0x???????? # point to link address
 ```
 
-7. Debug ( in process )
+7. Debugging ( In Process )
 
 still in process...
 
