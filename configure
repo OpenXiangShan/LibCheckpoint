@@ -41,12 +41,12 @@ while [[ $# -gt 0 ]]; do
     --help)
       echo "Usage: $0 [OPTIONS]"
       echo "Options:"
-      echo "  --gcpt_payload=PATH                   Set GCPT payload path"
-      echo "  --gcpt_payload_position=VALUE         Set GCPT payload position"
-      echo "  --display_cpu=VALUE                   Set DISPLAY_CPU_N"
-      echo "  --stop_cpu=VALUE                      Set STOP_CPU_N"
+      echo "  --gcpt-payload=PATH                   Set GCPT payload path"
+      echo "  --gcpt-payload-position=VALUE         Set GCPT payload position"
+      echo "  --display-cpu=VALUE                   Set DISPLAY_CPU_N"
+      echo "  --stop-cpu=VALUE                      Set STOP_CPU_N"
       echo "  --mode=<normal|dual_core|bare_metal>  Select operating mode"
-      echo "  --encode_decode_check                 Enable ENCODE_DECODE_CHECK"
+      echo "  --encode-decode_check                 Enable ENCODE_DECODE_CHECK"
       echo "  --enable-debug                        Enable debug (if applicable)"
       exit 0
       ;;
