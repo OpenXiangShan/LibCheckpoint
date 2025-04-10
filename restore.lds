@@ -96,11 +96,10 @@ SECTIONS
   {
     PROVIDE(_payload_start = .);
     *(.before_payload)
-    . = ALIGN(8);
     PROVIDE(_payload_end = .);
   }
 
-  . = DEFINED(GCPT_PAYLOAD_POSITION) ? GCPT_PAYLOAD_POSITION : .;
+  . = DEFINED(GCPT_PAYLOAD_POSITION) ? GCPT_PAYLOAD_POSITION : 0xFFFD0 + 0x30 ;
 
   .payload : {
     *(.payload.bin)
