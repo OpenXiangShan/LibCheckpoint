@@ -58,7 +58,7 @@ read_complete_flag:
   .word 0x0
 
   .section ".before_payload", "ax", %progbits
-  .align 4
+  .align 2
   .global before_boot_payload
 before_boot_payload:
   mv t0, a0
@@ -67,7 +67,7 @@ before_boot_payload:
   jalr zero, 0(t0)
 
   .section ".payload.bin", "ax", %progbits
-  .align 4
+  .align 2
   .global payload_bin
 payload_bin:
 #ifndef GCPT_PAYLOAD_PATH
