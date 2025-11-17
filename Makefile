@@ -65,7 +65,7 @@ OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(basename $(SRCS))))
 .PRECIOUS: %.pb.c %.pb.h
 # Protobuf
 %.pb.c: %.proto
-	@python resource/nanopb/generator/nanopb_generator.py --strip-path $<
+	@python3 resource/nanopb/generator/nanopb_generator.py --strip-path $<
 	@mv $(basename $<).pb.h include/
 	@mkdir -p export_include
 	@cp include/$(notdir $(basename $<)).pb.h $(EXPORT_DIR)/
