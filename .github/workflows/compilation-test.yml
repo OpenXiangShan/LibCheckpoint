@@ -12,6 +12,8 @@ jobs:
     container: ghcr.io/openxiangshan/xs-env:ubuntu-24.04
     permissions:
       contents: read
+    env:
+      CROSS_COMPILE: riscv64-linux-gnu-
     
     steps:
     - name: Checkout repository
