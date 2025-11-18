@@ -1,0 +1,42 @@
+name: Compilation Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/openxiangshan/xs-env:ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      CROSS_COMPILE: riscv64-linux-gnu-
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+    
+    - name: Build with default configuration
+      run: |
+        make clean
+        ./configure && make -j
+    
+    - name: Build with dual_core mode
+      run: |
+        make clean
+        ./configure --mode=dual_core && make -j
+    
+    - name: Build with stop_cpu=0
+      run: |
+        make clean
+        ./configure --stop_cpu=0 && make -j
+    
+    - name: Build with display_cpu=0
+      run: |
+        make clean
+        ./configure --display_cpu=0 && make -j
