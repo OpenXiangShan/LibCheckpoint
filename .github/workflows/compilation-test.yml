@@ -1,0 +1,33 @@
+name: Compilation Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/openxiangshan/xs-env:ubuntu-24.04
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install Python dependencies
+      run: |
+        pip install --upgrade protobuf grpcio-tools
+    
+    - name: Configure project
+      run: ./configure
+    
+    - name: Build project
+      run: make -j
+    
+    - name: Show build artifacts
+      run: |
+        ls -lh build/
+        file build/gcpt
