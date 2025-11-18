@@ -17,19 +17,25 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: true
     
-    - name: Install Python dependencies
-      run: |
-        pip install --upgrade protobuf grpcio-tools
+    - name: Build with default configuration
+      run: ./configure && make -j
     
-    - name: Configure project
-      run: ./configure
+    - name: Clean build
+      run: make clean
     
-    - name: Build project
-      run: make -j
+    - name: Build with dual_core mode
+      run: ./configure --mode=dual_core && make -j
     
-    - name: Show build artifacts
-      run: |
-        ls -lh build/
-        file build/gcpt
+    - name: Clean build
+      run: make clean
+    
+    - name: Build with stop_cpu=0
+      run: ./configure --stop_cpu=0 && make -j
+    
+    - name: Clean build
+      run: make clean
+    
+    - name: Build with display_cpu=0
+      run: ./configure --display_cpu=0 && make -j
