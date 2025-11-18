@@ -22,22 +22,21 @@ jobs:
         submodules: true
     
     - name: Build with default configuration
-      run: ./configure && make -j
-    
-    - name: Clean build
-      run: make clean
+      run: |
+        make clean
+        ./configure && make -j
     
     - name: Build with dual_core mode
-      run: ./configure --mode=dual_core && make -j
-    
-    - name: Clean build
-      run: make clean
+      run: |
+        make clean
+        ./configure --mode=dual_core && make -j
     
     - name: Build with stop_cpu=0
-      run: ./configure --stop_cpu=0 && make -j
-    
-    - name: Clean build
-      run: make clean
+      run: |
+        make clean
+        ./configure --stop_cpu=0 && make -j
     
     - name: Build with display_cpu=0
-      run: ./configure --display_cpu=0 && make -j
+      run: |
+        make clean
+        ./configure --display_cpu=0 && make -j
