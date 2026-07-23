@@ -19,6 +19,9 @@
 //no mhartid here
 
 #define CSRS(f) \
+  f(frm        , 0x002) \
+  f(menvcfg    , 0x30a) \
+  f(mstateen0  , 0x30c) f(mstateen1  , 0x30d) f(mstateen2  , 0x30e) f(mstateen3  , 0x30f) \
   f(mstatus    , 0x300) f(medeleg    , 0x302) f(mideleg    , 0x303) \
   f(mie        , 0x304) f(mtvec      , 0x305) f(mcounteren , 0x306) \
   f(mscratch   , 0x340) f(mepc       , 0x341) f(mcause     , 0x342) \
@@ -31,6 +34,8 @@
   f(stvec      , 0x105) f(scounteren , 0x106) \
   f(sscratch   , 0x140) f(sepc       , 0x141) f(scause     , 0x142) \
   f(stval      , 0x143) \
+  f(senvcfg    , 0x10a) \
+  f(sstateen0  , 0x10c) f(sstateen1  , 0x10d) f(sstateen2  , 0x10e) f(sstateen3  , 0x10f) \
   f(satp       , 0x180)
 
 #define HCSRS(f) \
@@ -38,6 +43,7 @@
   f(hie        , 0x604) f(hcounteren , 0x606) f(hgeie      , 0x607) \
   f(htval      , 0x643) f(hip        , 0x644) f(hvip       , 0x645) \
   f(htinst     , 0x64A) f(henvcfg    , 0x60A) \
+  f(hstateen0  , 0x60c) f(hstateen1  , 0x60d) f(hstateen2  , 0x60e) f(hstateen3  , 0x60f) \
   f(hgatp      , 0x680) f(htimedelta , 0x605) \
   f(vsstatus   , 0x200) f(vsie       , 0x204) f(vstvec     , 0x205) \
   f(vsscratch  , 0x240) f(vsepc      , 0x241) f(vscause    , 0x242) \
