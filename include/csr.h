@@ -62,7 +62,11 @@
 #define RESTORE_MSTATUS_STATE(state, reg) \
   csrw CSR_MSTATUS, reg; \
 
+#ifdef CONFIG_CLINT_MMIO
+#define CLINT_MMIO              CONFIG_CLINT_MMIO
+#else
 #define CLINT_MMIO              0x38000000
+#endif
 #define CLINT_MTIMECMP          0x4000
 #define CLINT_MTIME             0xBFF8
 
