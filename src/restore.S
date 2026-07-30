@@ -21,6 +21,15 @@
   .global restore_csr_vector
 restore_csr_vector:
   mv t0, a0
+  li t2, CSR_FCSR
+  slli t2, t2, 3
+  add t2, t0, t2
+  ld t1, (t2)
+  li t0, MSTATUS_FS
+  csrs CSR_MSTATUS, t0
+  csrw CSR_FCSR, t1
+
+  mv t0, a0
   CSRS(CSRS_RESTORE)
   li a0, 1
   ret
