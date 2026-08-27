@@ -40,7 +40,11 @@
 extern "C" {
 #endif
 
+#ifdef CONFIG_SERIAL_PORT
+#define SERIAL_PORT CONFIG_SERIAL_PORT
+#else
 #define SERIAL_PORT 0x40600004
+#endif
 
 /**
  * Output a character to a custom device like UART, used by the printf() function
